@@ -1,7 +1,8 @@
 package fta.view
 
+import fta.LTS.Trans
 import fta.{ETA, System}
-import fta.System.{SysLabel, SysSt, SysTrans}
+import fta.System._
 
 /**
  * Created by guillecledou on 26/01/2021
@@ -25,14 +26,15 @@ object Dot:
       |}
       |""".stripMargin
 
-  protected def mkTrans(t: SysTrans, states:Map[SysSt,Int],names:Map[Int,String]):String =
-  s"""${states(t.from)} -> ${states(t.to)} [label="${mkLbl(t.lbl,names)}"]"""
+  protected def mkTrans(t: Trans[SysSt,SysLabel], states:Map[SysSt,Int],names:Map[Int,String]):String =
+  s"""${states(t.from)} -> ${states(t.to)} [label="${mkLbl(t.by,names)}"]"""
 
   protected def mkLbl(l:SysLabel,names:Map[Int,String]):String =
     s"""(${l.senders.map(names).mkString(",")}), ${l.act}, (${l.receivers.map(names).mkString(",")})""".stripMargin
 
   def apply(e:ETA):String =
-    val states = e.s.states.zipWithIndex.toMap
+    val (rst,rtrans) = e.reachable()
+    val states = rst.zipWithIndex.toMap//e.s.states.zipWithIndex.toMap
     val names = e.s.components.zipWithIndex.map(c => c._2 -> c._1.name).toMap
     s"""
        |digraph G {
@@ -43,6 +45,6 @@ object Dot:
        |   rank=min;
        |   node [style=filled,shape=doublecircle] ${e.s.init.map(st => states(st)).mkString(",")}
        |   }
-       |  ${e.trans.map(t => mkTrans(t,states,names)).mkString("\n")}
+       |  ${rtrans.map(t => mkTrans(t,states,names)).mkString("\n")}
        |}
        |""".stripMargin

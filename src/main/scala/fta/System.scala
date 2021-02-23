@@ -1,23 +1,24 @@
 package fta
 
 import fta.CAutomata._
+import fta.LTS.Trans
 import fta.System._
 
 case class System(components:List[CAutomata]):
 
-  lazy val actions:Set[CAction] = components.flatMap(_.actions).toSet
+  lazy val actions:Set[CAction] = components.flatMap(_.labels).toSet
   lazy val inputs:Set[CAction] = components.flatMap(_.ins).toSet
   lazy val outputs:Set[CAction] = components.flatMap(_.outs).toSet
   lazy val communicating:Set[CAction] = inputs intersect outputs
 
-  lazy val labels:Set[SysLabel] = trans.map(t=>t.lbl)
+  lazy val labels:Set[SysLabel] = trans.map(t=>t.by)
 
   lazy val init:Set[SysSt] =
     crossProduct(components.map(_.init.toList)).map(st=>SysSt(st)).toSet
   lazy val states:Set[SysSt] =
     crossProduct(components.map(_.states.toList)).map(st=>SysSt(st)).toSet
 
-  lazy val trans:Set[SysTrans] = components match
+  lazy val trans:Set[Trans[SysSt,SysLabel]] = components match
     case Nil => Set()
     case c::Nil => liftTrans(c)
     case c::cs =>
@@ -25,21 +26,21 @@ case class System(components:List[CAutomata]):
       val fst = liftTrans(c)
       csi.foldLeft(fst)({case (ts,(a,i)) =>compSysCa(ts,a,i)})
 
-  protected def liftTrans(c:CAutomata):Set[SysTrans] =
+  protected def liftTrans(c:CAutomata):Set[Trans[SysSt,SysLabel]] =
     for t <- c.trans
-      yield SysTrans(SysSt(List(t.from)),mkLbl(t.act,c,0),SysSt(List(t.to)))
+      yield SysTrans(SysSt(List(t.from)),mkLbl(t.by,c,0),SysSt(List(t.to)))
 
-  protected def compSysCa(strans:Set[SysTrans], c:CAutomata, cn:CName):Set[SysTrans] =
-    var ts:Set[SysTrans]= Set()
+  protected def compSysCa(strans:Set[Trans[SysSt,SysLabel]], c:CAutomata, cn:CName):Set[Trans[SysSt,SysLabel]] =
+    var ts:Set[Trans[SysSt,SysLabel]]= Set()
     // joined
-    for st<-strans;t<-c.trans; if (st.lbl.act == t.act) do
-      ts+=SysTrans(mkSt(st.from,t.from),mkJoinLbl(st.lbl,c,cn),mkSt(st.to,t.to))
+    for st<-strans;t<-c.trans; if (st.by.act == t.by) do
+      ts+=SysTrans(mkSt(st.from,t.from),mkJoinLbl(st.by,c,cn),mkSt(st.to,t.to))
     // only left
     for loc<-strans.flatMap(t=>Set(t.from,t.to)); t<-c.trans do //; if (!communicating.contains(t.act)))
-      ts+=SysTrans(mkSt(loc,t.from),mkLbl(t.act,c,cn),mkSt(loc,t.to))
+      ts+=SysTrans(mkSt(loc,t.from),mkLbl(t.by,c,cn),mkSt(loc,t.to))
     // only right
     for loc<-c.states; st<-strans do //; if (!communicating.contains(st.lbl.act)))
-      ts+=SysTrans(mkSt(st.from,loc),st.lbl,mkSt(st.to,loc))
+      ts+=SysTrans(mkSt(st.from,loc),st.by,mkSt(st.to,loc))
     ts
 
 object System {
@@ -48,7 +49,7 @@ object System {
 
   case class SysLabel(senders:Set[CName],act:CAction,receivers:Set[CName])
   case class SysSt(states:List[CState])
-  case class SysTrans(from:SysSt, lbl:SysLabel,to:SysSt)
+  case class SysTrans(from:SysSt, by:SysLabel, to:SysSt) extends Trans[SysSt,SysLabel]
 
   def crossProduct[A](list:List[List[A]]):List[List[A]] = list match
     case Nil => List()
