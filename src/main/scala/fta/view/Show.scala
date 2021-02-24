@@ -14,8 +14,9 @@ trait Show[-A]:
 
 object Show: 
   given showCReq : Show[CReq] with 
-    extension (a:CReq) def show: String = a match {
-      case CRTrue => ""
+    extension (a:CReq) def show: String = a.simplify match {
+      case CRTrue => "true"
+      case CRFalse => "false"
       case Rcp(at, act) => s"rcp({${at.mkString(",")}},$act)"
       case Rsp(at, act) => s"rsp({${at.mkString(",")}},$act)"
       case CRAnd(r1, r2) => "(" ++ r1.show ++ "&&" ++ r2.show ++ ")"
