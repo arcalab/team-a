@@ -1,7 +1,7 @@
-package fta
+package fta.eta
 
-import fta.CAutomata._
-import fta.System._
+import fta.eta.CAutomata._
+import fta.eta.System._
 
 case class System(components:List[CAutomata]):
 
@@ -24,6 +24,22 @@ case class System(components:List[CAutomata]):
       val csi = cs.zip(LazyList.from(1))
       val fst = liftTrans(c)
       csi.foldLeft(fst)({case (ts,(a,i)) =>compSysCa(ts,a,i)})
+  
+  def locallyEnabledIn(st:SysSt):Set[(CAction,CName)] = 
+    var enabled = Set[(CAction,CName)]()
+    for ((lst,aut) <- st.states.zipWithIndex) do 
+      val enActs = components(aut).enabledIn(lst)
+      enabled ++= enActs.map(a=> (a,aut))
+    enabled
+
+  def locallyEnabledOut(st:SysSt):Set[(CAction,CName)] =
+    var enabled = Set[(CAction,CName)]()
+    for ((lst,aut) <- st.states.zipWithIndex) do
+      val enActs = components(aut).enabledOut(lst)
+      enabled ++= enActs.map(a=> (a,aut))
+    enabled
+  
+  
 
   protected def liftTrans(c:CAutomata):Set[SysTrans] =
     for t <- c.trans
@@ -42,6 +58,8 @@ case class System(components:List[CAutomata]):
       ts+=SysTrans(mkSt(st.from,loc),st.by,mkSt(st.to,loc))
     ts
 
+
+
 object System {
 
   type CName = Int
@@ -55,6 +73,7 @@ object System {
     case l::Nil => l.map(List(_))
     case l::ls => for e <- l ; cp <- crossProduct(ls) yield List(e) ++ cp
 
+  // todo: fix cname to be directly c.name
   protected def mkJoinLbl(slbl:SysLabel, c:CAutomata, cn:CName):SysLabel =
     if c.ins.contains(slbl.act) then SysLabel(slbl.senders,slbl.act,slbl.receivers+cn)
     else SysLabel(slbl.senders+cn,slbl.act,slbl.receivers)

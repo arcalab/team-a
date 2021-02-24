@@ -1,7 +1,7 @@
 package fta.view
 
-import fta.{ETA, System}
-import fta.System._
+import fta.eta.System._
+import fta.eta.{ETA, System}
 
 /**
  * Created by guillecledou on 26/01/2021

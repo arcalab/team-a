@@ -1,9 +1,9 @@
 package fta.view
 
-import fta.CAutomata.CAction
-import fta.CReq
-import fta.CReq._
-import fta.System.SysLabel
+import fta.eta.CAutomata.CAction
+import fta.eta.CReq._
+import fta.eta.System.SysLabel
+import fta.eta.CReq
 
 /**
  * Created by guillecledou on 27/01/2021

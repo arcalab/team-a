@@ -1,7 +1,8 @@
-package fta
+package fta.eta
 
-import fta.CAutomata.CAction
-import fta.System.CName
+import fta.eta.CAutomata.CAction
+import fta.eta.CReq
+import fta.eta.System.CName
 import fta.view.Show
 
 /**
