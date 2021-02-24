@@ -1,14 +1,12 @@
 package fta
 
 import fta.CAutomata._
-import fta.LTS
-import fta.LTS.Trans
 
 case class CAutomata(states: Set[CState]
                      , labels: Set[CAction], ins: Set[CAction], outs: Set[CAction]
-                     , trans: Set[Trans[CState,CAction]]
+                     , trans: Set[CTransition]
                      , init: Set[CState]
-                     , name: String) extends LTS[CState,CAction]:
+                     , name: String):
 
   def get(inputs:String): CAutomata =
     CAutomata(states, labels, inputs.split(",").toSet, outs, trans, init,name)
@@ -34,6 +32,6 @@ object CAutomata:
   val newCA:CAutomata = CAutomata(Set(), Set(), Set(), Set(), Set(), Set(),"")
   
   //case class CAction(action:String) extends Lbl[String] 
-  case class CTransition(from:CState, by:CAction, to:CState) extends Trans[CState,CAction]:
+  case class CTransition(from:CState, by:CAction, to:CState):
     def by(a:CAction) = CTransition(from,a,to)
 

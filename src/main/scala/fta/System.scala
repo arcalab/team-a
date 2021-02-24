@@ -1,7 +1,6 @@
 package fta
 
 import fta.CAutomata._
-import fta.LTS.Trans
 import fta.System._
 
 case class System(components:List[CAutomata]):
@@ -18,7 +17,7 @@ case class System(components:List[CAutomata]):
   lazy val states:Set[SysSt] =
     crossProduct(components.map(_.states.toList)).map(st=>SysSt(st)).toSet
 
-  lazy val trans:Set[Trans[SysSt,SysLabel]] = components match
+  lazy val trans:Set[SysTrans] = components match
     case Nil => Set()
     case c::Nil => liftTrans(c)
     case c::cs =>
@@ -26,12 +25,12 @@ case class System(components:List[CAutomata]):
       val fst = liftTrans(c)
       csi.foldLeft(fst)({case (ts,(a,i)) =>compSysCa(ts,a,i)})
 
-  protected def liftTrans(c:CAutomata):Set[Trans[SysSt,SysLabel]] =
+  protected def liftTrans(c:CAutomata):Set[SysTrans] =
     for t <- c.trans
       yield SysTrans(SysSt(List(t.from)),mkLbl(t.by,c,0),SysSt(List(t.to)))
 
-  protected def compSysCa(strans:Set[Trans[SysSt,SysLabel]], c:CAutomata, cn:CName):Set[Trans[SysSt,SysLabel]] =
-    var ts:Set[Trans[SysSt,SysLabel]]= Set()
+  protected def compSysCa(strans:Set[SysTrans], c:CAutomata, cn:CName):Set[SysTrans] =
+    var ts:Set[SysTrans]= Set()
     // joined
     for st<-strans;t<-c.trans; if (st.by.act == t.by) do
       ts+=SysTrans(mkSt(st.from,t.from),mkJoinLbl(st.by,c,cn),mkSt(st.to,t.to))
@@ -49,7 +48,7 @@ object System {
 
   case class SysLabel(senders:Set[CName],act:CAction,receivers:Set[CName])
   case class SysSt(states:List[CState])
-  case class SysTrans(from:SysSt, by:SysLabel, to:SysSt) extends Trans[SysSt,SysLabel]
+  case class SysTrans(from:SysSt, by:SysLabel, to:SysSt)
 
   def crossProduct[A](list:List[List[A]]):List[List[A]] = list match
     case Nil => List()

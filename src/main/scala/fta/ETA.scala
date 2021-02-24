@@ -2,17 +2,41 @@ package fta
 
 import fta.CAutomata.CAction
 import fta.ETA.STypes
-import fta.LTS.Trans
 import fta.System._
 
 
-case class ETA(s:System,st:STypes) extends LTS[SysSt,SysLabel]:
-  val trans:Set[Trans[SysSt,SysLabel]] = s.trans.filter(t=>
+case class ETA(s:System,st:STypes) :
+  
+  lazy val labels:Set[SysLabel] = s.labels
+  lazy val states:Set[SysSt] = reachableSt
+  lazy val init:Set[SysSt] = s.init
+  lazy val trans:Set[SysTrans] = reachableTrans  
+  
+  protected lazy val (reachableSt,reachableTrans):(Set[SysSt],Set[SysTrans]) = reachable()
+  
+  protected def reachable():(Set[SysSt],Set[SysTrans]) = 
+    var visited:Set[SysSt] = init
+    var transitions:Set[SysTrans] = Set()
+    for (t <- allTrans.filter(t=>init.contains(t.from))) do
+      transitions += t
+      if (!(visited contains t.to)) then
+        visit(t.to,visited,transitions) match 
+           case (v,ne) => {visited = v + t.to; transitions = ne}
+    (visited,transitions)
+  
+  protected def visit(st:SysSt,v:Set[SysSt],nt:Set[SysTrans]): (Set[SysSt],Set[SysTrans]) =
+    var visited = v + st
+    var transitions = nt
+    for (t <- allTrans.filter(_.from == st))
+      transitions += t
+      if (!(visited contains t.to)) then
+        visit(t.to,visited,transitions) match 
+          case (ved,nes) => {visited = ved; transitions = nes}
+    (visited, transitions)
+
+  protected lazy val allTrans:Set[SysTrans] = s.trans.filter(t=>
     if s.communicating.contains(t.by.act) then (st(t.by.act).satisfies(t.by)) else true)
   
-  val labels:Set[SysLabel] = s.labels
-  val states:Set[SysSt] = s.states
-  val init:Set[SysSt] = s.init
 
 object ETA {
 
