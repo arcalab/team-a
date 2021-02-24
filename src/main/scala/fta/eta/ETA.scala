@@ -66,14 +66,13 @@ case class ETA(s:System,st:STypes) :
     val combinations = groupBy.map(en=>en._1 -> en._2.subsets().toSet)
     val requestsPerAct = combinations.map(c=>mkActRsp(c._1,c._2))
     requestsPerAct.foldRight[CReq](CRFalse)(CROr(_,_))
-
-
+  
   def mkActRcp(a:CAction,comb:Set[Set[CName]]):CReq =
-    val req = comb.map(s=> Rcp(s,a)).filter(rcp => st(a).satisfies(rcp))
+    val req = comb.filter(s=>s.nonEmpty).map(s=> Rcp(s,a)).filter(rcp => st(a).satisfies(rcp))
     req.foldRight[CReq](CRTrue)(CRAnd(_,_))
 
   def mkActRsp(a:CAction,comb:Set[Set[CName]]):CReq =
-    val req = comb.map(s=> Rsp(s,a)).filter(rsp => st(a).satisfies(rsp))
+    val req = comb.filter(s=>s.nonEmpty).map(s=> Rsp(s,a)).filter(rsp => st(a).satisfies(rsp))
     req.foldRight[CReq](CRFalse)(CROr(_,_))
 
 object ETA:
