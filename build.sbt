@@ -1,4 +1,4 @@
-name := "featuredTeam"
+name := "team-a"
 
 version := "0.1"
 

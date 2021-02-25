@@ -38,21 +38,13 @@ case class ETA(s:System,st:STypes) :
           case (ved,nes) => {visited = ved; transitions = nes}
     (visited, transitions)
 
-  //def requirements() =
-    //val req:Map[SysSt,StReq] = Map()
-    //for (gs <- states) {
-    //  val enabled:Map[CAction,Set[CName]] = s.locallyEnabledIn(gs)
-    //    .groupBy(a=>a._1).map(a=>a._1->a._2.map(_._2))
-    //  val combinations = enabled.map(en=>en._1 -> en._2.subsets()
-    //}
-    //???
-
   def requirements():Map[SysSt,StReq] =
     var req:Map[SysSt,StReq] = Map()
     for (gs <- states)
-      req += (gs -> StReq(mkRcp(s.locallyEnabledOut(gs)),mkRsp(s.locallyEnabledIn(gs))))
+      req += (gs -> StReq(mkRcp(s.locallyEnabledOut(gs)),mkRsp(s.locallyEnabledIn(gs),gs)))
     req
 
+  //todo: simplify and rewrite requirements generation
   def mkRcp(enabled:Set[(CAction,CName)]):CReq =
     val groupBy:Map[CAction,Set[CName]] = enabled.groupBy(a=>a._1).map(a=>a._1->a._2.map(_._2))
       .filter(a=>s.communicating.contains(a._1))
@@ -60,12 +52,14 @@ case class ETA(s:System,st:STypes) :
     val requestsPerAct = combinations.map(c=>mkActRcp(c._1,c._2))
     requestsPerAct.foldRight[CReq](CRTrue)(CRAnd(_,_))
 
-  def mkRsp(enabled:Set[(CAction,CName)]):CReq =
+  //todo: simplify and rewrite requirements generation
+  def mkRsp(enabled:Set[(CAction,CName)],gs:SysSt):CReq =
     val groupBy:Map[CAction,Set[CName]] = enabled.groupBy(a=>a._1).map(a=>a._1->a._2.map(_._2))
       .filter(a=>s.communicating.contains(a._1))
-    val combinations = groupBy.map(en=>en._1 -> en._2.subsets().toSet)
+    val nonInEnabled = groupBy.filter(m => m._2.forall(ca=>s.components(ca).enabledOut(gs.states(ca)).isEmpty))
+    val combinations = nonInEnabled.map(en=>en._1 -> en._2.subsets().toSet)
     val requestsPerAct = combinations.map(c=>mkActRsp(c._1,c._2))
-    requestsPerAct.foldRight[CReq](CRFalse)(CROr(_,_))
+    if requestsPerAct.isEmpty then CRTrue else requestsPerAct.foldRight[CReq](CRFalse)(CROr(_,_))
   
   def mkActRcp(a:CAction,comb:Set[Set[CName]]):CReq =
     val req = comb.filter(s=>s.nonEmpty).map(s=> Rcp(s,a)).filter(rcp => st(a).satisfies(rcp))
@@ -73,7 +67,7 @@ case class ETA(s:System,st:STypes) :
 
   def mkActRsp(a:CAction,comb:Set[Set[CName]]):CReq =
     val req = comb.filter(s=>s.nonEmpty).map(s=> Rsp(s,a)).filter(rsp => st(a).satisfies(rsp))
-    req.foldRight[CReq](CRFalse)(CROr(_,_))
+    if req.isEmpty then CRTrue else req.foldRight[CReq](CRFalse)(CROr(_,_))
 
 object ETA:
 
@@ -86,14 +80,15 @@ object ETA:
       snd.satisfies(l.senders.size) && rcv.satisfies(l.receivers.size)
 
     def satisfies(req:Rcp):Boolean =
-      snd.satisfies(req.at.size) && rcv.min != 0 
+      snd.satisfies(req.at.size) && rcv.min != 0 && snd.min != 0 
 
     def satisfies(req:Rsp):Boolean =
-      rcv.satisfies(req.at.size) && snd.min != 0
+      rcv.satisfies(req.at.size) && snd.min != 0 && rcv.min != 0
 
     def valid():Boolean =
       !(snd.min == 0 && rcv.min == 0)
 
   case class SRange(min:Int,max:Int):
     def satisfies(n:Int):Boolean = min <= n && max >= n
-
+    val l:Range = 1 to 3
+  

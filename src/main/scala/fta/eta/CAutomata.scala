@@ -24,7 +24,7 @@ case class CAutomata(states: Set[CState]
     ts.foldRight(this)({case (t,a) => a+t})
 
   def named(n:String):CAutomata =
-    CAutomata(states, labels, ins, outs, trans, init,n)
+    CAutomata(states, labels, ins, outs, trans, init,n)    
     
   def enabledIn(st:CState):Set[CAction] =
     trans.collect({case t if t.from==st && ins.contains(t.by) => t.by})
