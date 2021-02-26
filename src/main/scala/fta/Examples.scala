@@ -35,7 +35,7 @@ object Examples:
     5 --> 0 by "fwd"
   ) get "leave,join,reject,grant,msg" pub "confirmL,confirmJ,ask,fwd" initial 0 named "s"
 
-  lazy val sys1: eta.System = System(List(u1,s))
+  lazy val sys1: System = System(List(u1,s))
   lazy val sys2: System = System(List(u1,u2,s))
 
   lazy val one2one: SType = SType(SRange(1,1),SRange(1,1))
@@ -44,5 +44,5 @@ object Examples:
   lazy val st: Map[CAction, SType] = 
     sys1.communicating.map(a=> a->one2one).toMap + ("fwd" -> one2any)
 
-  lazy val eta1: ETA = eta.ETA(sys1,st)
-  lazy val eta2: ETA = eta.ETA(sys2,st) // paper example
+  lazy val eta1: ETA = ETA(sys1,st)
+  lazy val eta2: ETA = ETA(sys2,st) // paper example
