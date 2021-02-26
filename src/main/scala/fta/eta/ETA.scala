@@ -88,7 +88,9 @@ object ETA:
     def valid():Boolean =
       !(snd.min == 0 && rcv.min == 0)
 
-  case class SRange(min:Int,max:Int):
-    def satisfies(n:Int):Boolean = min <= n && max >= n
+  case class SRange(min:Int,max:Option[Int]):
+    def satisfies(n:Int):Boolean = min <= n && max.map(_>=n) != Some(false)
     val l:Range = 1 to 3
+  object SRange:
+    def apply(min:Int,max:Int) = new SRange(min,Some(max))
   
