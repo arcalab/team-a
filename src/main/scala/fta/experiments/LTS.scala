@@ -7,10 +7,10 @@ trait LTS[S<:Any,L<:Any]:
   type St = S
   type Lbl <: Label[L]
   
-  protected val states:Set[St]
-  protected val labels:Set[Lbl]
-  protected val initial:Set[St]
-  protected val trans:Set[Trans]
+  protected lazy val states:Set[St]
+  protected lazy val labels:Set[Lbl]
+  protected lazy val initial:Set[St]
+  protected lazy val trans:Set[Trans]
 
   def getTrans():Set[Trans]
   def getStates():Set[St]
@@ -19,10 +19,11 @@ trait LTS[S<:Any,L<:Any]:
 
 object LTS: 
   trait Transition[S<:Any,L<:Any]:
+    type Lbl<:Label[L]
     val from:S
     val to:S 
-    val by:Label[L]
-  
+    val by:Lbl
+  //
   trait Label[L]:
     val action:L 
   
