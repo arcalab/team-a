@@ -83,4 +83,6 @@ object System {
     else SysLabel(Set(cn),a,Set())
 
   protected def mkSt(st:SysSt, s:CState):SysSt = SysSt(st.states.appended(s))
+  
+  def apply(cas:CAutomata*): System = new System(cas.toList)
 }
