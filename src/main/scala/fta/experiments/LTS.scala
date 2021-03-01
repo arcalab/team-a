@@ -1,30 +1,46 @@
 package fta.experiments
 
-import fta.experiments.LTS.{Label, Transition}
+import fta.experiments.LTS.Transition
 
-trait LTS[S<:Any,L<:Any]:
-  type Trans <:Transition[S,L]
-  type St = S
-  type Lbl <: Label[L]
+/**
+ * Created by guillecledou on 26/02/2021
+ */
+
+trait LTS[S,L]:
+  type St = S 
+  type Label = L 
+  type Trans <: Transition[S,L]
   
-  protected lazy val states:Set[St]
-  protected lazy val labels:Set[Lbl]
-  protected lazy val initial:Set[St]
-  protected lazy val trans:Set[Trans]
+  val labels:Set[Label]
+  val trans:Set[Trans]
+  val states:Set[St]
+  val initial:Set[St]
 
-  def getTrans():Set[Trans]
-  def getStates():Set[St]
-  def getInitial():Set[St]
-  def getLabels():Set[Lbl]
+  protected def reachable(trs:Set[Trans]):(Set[St],Set[Trans]) =
+    var visited:Set[St] = initial
+    var transitions:Set[Trans] = Set()
+    for (t <- trs.filter(t=>initial.contains(t.from))) do
+      transitions += t
+      if (!(visited contains t.to)) then
+        visit(t.to,visited,transitions)(using trs) match
+          case (v,ne) => {visited = v + t.to; transitions = ne}
+    (visited,transitions)
 
-object LTS: 
-  trait Transition[S<:Any,L<:Any]:
-    type Lbl<:Label[L]
-    val from:S
+  protected def visit(st:St,v:Set[St],nt:Set[Trans])(using trs:Set[Trans]): (Set[St],Set[Trans]) =
+    var visited = v + st
+    var transitions = nt
+    for (t <- trs.filter(_.from == st))
+      transitions += t
+      if (!(visited contains t.to)) then
+        visit(t.to,visited,transitions) match 
+          case (ved,nes) => {visited = ved; transitions = nes}
+    (visited, transitions)
+
+object LTS:
+
+  trait Transition[S,L]: 
+    val from:S 
     val to:S 
-    val by:Lbl
-  //
-  trait Label[L]:
-    val action:L 
-  
+    val by:L
+
   
