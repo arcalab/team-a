@@ -1,10 +1,9 @@
 package fta.eta
 
-import fta.eta.CAutomata.CAction
-import fta.eta.CReq
-import fta.eta.CReq.{CRAnd, CRFalse, CROr, CRTrue}
+import fta.eta.CA.CAction
 import fta.eta.System.CName
-import fta.view.Show
+import fta.eta.CReq._
+
 
 /**
  * Created by guillecledou on 27/01/2021

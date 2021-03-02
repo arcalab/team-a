@@ -1,10 +1,10 @@
 package fta
 
-import fta.eta.CAutomata._
+import fta.eta.CA._
 import fta.eta.CReq.Rcp
 import fta.DSL._
 import fta.eta.ETA.{SRange, SType}
-import fta.eta.{CAutomata, ETA, System}
+import fta.eta.{CA, ETA, System}
 
 /**
  * Created by guillecledou on 27/01/2021
@@ -12,18 +12,18 @@ import fta.eta.{CAutomata, ETA, System}
 
 object Examples:
 
-  lazy val u1: CAutomata = newCA ++ (
+  lazy val u1: CA = newCA ++ (
     0 --> 1 by "join",
     1 --> 2 by "confirmJ",
     2 --> 2 by "msg",
     2 --> 2 by "fwd",
     2 --> 3 by "leave",
     3 --> 0 by "confirmL"
-  ) get "confirmL,confirmJ,fwd" pub "join,msg,leave" initial 0 named "u1"
+  ) get "confirmL,confirmJ,fwd" pub "join,msg,leave" init 0 named "u1"
 
-  lazy val u2: CAutomata = u1 named "u2"
+  lazy val u2: CA = u1 named "u2"
 
-  lazy val s: CAutomata = newCA ++ (
+  lazy val s: CA = newCA ++ (
     0 --> 1 by "join",
     1 --> 0 by "confirmJ",
     0 --> 2 by "leave",
@@ -33,7 +33,7 @@ object Examples:
     4 --> 5 by "grant",
     4 --> 0 by "reject",
     5 --> 0 by "fwd"
-  ) get "leave,join,reject,grant,msg" pub "confirmL,confirmJ,ask,fwd" initial 0 named "s"
+  ) get "leave,join,reject,grant,msg" pub "confirmL,confirmJ,ask,fwd" init 0 named "s"
   
   lazy val sys1: System = System(u1,s)
   lazy val sys2: System = System(u1,u2,s)

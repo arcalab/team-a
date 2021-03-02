@@ -1,6 +1,6 @@
-package fta.experiments
+package fta.lts
 
-import fta.experiments.LTS.Transition
+import fta.lts.LTS.Transition
 
 /**
  * Created by guillecledou on 26/02/2021
@@ -35,6 +35,9 @@ trait LTS[S,L]:
         visit(t.to,visited,transitions) match 
           case (ved,nes) => {visited = ved; transitions = nes}
     (visited, transitions)
+
+  def enabled(st:St):Set[Label] =
+    trans.collect({case t if t.from==st => t.by})
 
 object LTS:
 

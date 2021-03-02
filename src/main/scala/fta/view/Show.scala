@@ -1,9 +1,11 @@
 package fta.view
 
-import fta.eta.CAutomata.CAction
-import fta.eta.CReq._
 import fta.eta.System.SysLabel
+import fta.eta.CA.CAction
 import fta.eta.CReq
+import fta.eta.CReq._
+
+
 
 /**
  * Created by guillecledou on 27/01/2021
@@ -25,4 +27,4 @@ object Show:
 
   given showLabel: Show[SysLabel] with 
     extension (a:SysLabel) def show:String =
-      s"""{${a.senders.mkString(",")}, ${a.act},{${a.receivers.mkString(",")}"""
+      s"""{${a.senders.mkString(",")}, ${a.action},{${a.receivers.mkString(",")}"""

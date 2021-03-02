@@ -1,6 +1,6 @@
 package fta
 
-import fta.eta.CAutomata.CTransition
+import fta.eta.CA.CTrans
 import fta.eta.ETA.SRange
 import fta.eta.{ETA, System}
 import fta.view.Dot
@@ -13,7 +13,7 @@ import scala.language.implicitConversions
 
 object DSL:
   class CALoc(i:Int):
-    def -->(other:Int): CTransition = CTransition(i,"",other)
+    def -->(other:Int): CTrans = CTrans(i,"",other)
 
   implicit def int2CALoc(i:Int):CALoc = new CALoc(i)
   implicit def range2SRange(r:Range): SRange =

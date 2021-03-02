@@ -24,7 +24,7 @@ object Dot:
       |  edge [arrowsize=0.7]
       |  {
       |   rank=min;
-      |   node [style=filled,shape=doublecircle] ${s.init.map(st=>states(st)).mkString(",")}
+      |   node [style=filled,shape=doublecircle] ${s.initial.map(st=>states(st)).mkString(",")}
       |  }
       |  ${s.trans.map(t => mkTrans(t,states,names)).mkString("\n")}
       |}
@@ -34,7 +34,7 @@ object Dot:
   s"""${states(t.from)} -> ${states(t.to)} [label="${mkLbl(t.by,names)}"]"""
 
   protected def mkLbl(l:SysLabel,names:Map[Int,String]):String =
-    s"""(${l.senders.map(names).mkString(",")}), ${l.act}, (${l.receivers.map(names).mkString(",")})""".stripMargin
+    s"""(${l.senders.map(names).mkString(",")}), ${l.action}, (${l.receivers.map(names).mkString(",")})""".stripMargin
 
   def apply(e:ETA):String =
     val states = e.states.zipWithIndex.toMap//e.s.states.zipWithIndex.toMap
@@ -49,7 +49,7 @@ object Dot:
        |  ${reqs.map(r => mkReqs(states(r._1),r._2)(using names)).mkString("\n")}
        |  {
        |   rank=min;
-       |   node [style=filled,shape=doublecircle] ${e.s.init.map(st => states(st)).mkString(",")}
+       |   node [style=filled,shape=doublecircle] ${e.s.initial.map(st => states(st)).mkString(",")}
        |   }
        |   {
        |   ${states.map(n=> s"""${n._2} [label="(${n._1.states.mkString(",")})"]""").mkString("\n")}
