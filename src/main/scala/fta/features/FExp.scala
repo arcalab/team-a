@@ -1,6 +1,7 @@
 package fta.features
 
 import fta.features.FExp._
+import fta.backend.Solver
 
 sealed trait FExp :
   def feats: Set[Feature] = this match {
@@ -34,8 +35,73 @@ sealed trait FExp :
     case FEq(e1, e2)  => ((e1-->e2)&&(e2-->e1)).check(sol)
   }
 
+  def satisfiedBy(featureSelection:Set[Feature]): Boolean =
+    check(featureSelection.map(f=>f->true).toMap)
+
+  /**
+   * Calculates the set of products allowed by the feature expression
+   * w.r.t a set of features
+   * @param fts set of features
+   * @return the set of all valid feature selections, i.e., a set of valid products
+   */
+  def products(fts:Set[Feature]):Set[Product] = 
+    val fExp = this.simplify
+    val ftsNotUsed = fts -- fExp.feats.toSet
+    val fm =
+      if (ftsNotUsed.isEmpty) then fExp 
+      else  FAnd(fExp,(ftsNotUsed.foldLeft[FExp](FNot(FTrue))(_ || Feat(_)) || Feat("__feat__")))
+    val sols = Solver.all(fm.simplify)
+    val allSols = (for (so <- sols) yield so.map(s => if (s._2) s._1 else "").toSet.filterNot(_ =="")).toSet
+    allSols.map(s => s.filterNot( _ =="__feat__"))
+  
+  def simplify:FExp =
+    val once = this.simplifyOnce
+    if this != once then once.simplify else once
+
+  /**
+   * Remove syntactic sugar (<->,-->)
+   * @param f
+   * @return
+   */
+  def removeSS:FExp = this match 
+    case FTrue => FTrue
+    case Feat(_)     => this
+    case FAnd(e1,e2) => FAnd(e1.removeSS,e2.removeSS)
+    case FOr(e1,e2) => FOr(e1.removeSS,e2.removeSS)
+    case FNot(e) => FNot(e.removeSS)
+    case FImp(e1,e2) => FOr(FNot(e1.removeSS), e2.removeSS)
+    case FEq(e1,e2) => FAnd(FImp(e1,e2).removeSS,FImp(e2,e1).removeSS)
+  
+  protected def simplifyOnce:FExp = this match
+    case FAnd(FNot(FTrue),_) => FNot(FTrue)
+    case FAnd(_,FNot(FTrue)) => FNot(FTrue)
+    case FAnd(FTrue,FTrue) => FTrue
+    case FAnd(FTrue,r2) => r2.simplifyOnce
+    case FAnd(r1,FTrue) => r1.simplifyOnce
+    case FAnd(r1,r2) if r1.expensiveEqual(r2) => r1.simplifyOnce
+    case FAnd(r1,r2) => FAnd(r1.simplifyOnce,r2.simplifyOnce)
+    case FOr(FTrue,_) => FTrue
+    case FOr(_,FTrue) => FTrue
+    case FOr(FNot(FTrue),r1) => r1.simplifyOnce
+    case FOr(r1,FNot(FTrue)) => r1.simplifyOnce
+    case FOr(r1,r2) if r1.expensiveEqual(r2) => r1.simplifyOnce
+    case FOr(r1,r2) => FOr(r1.simplifyOnce,r2.simplifyOnce)
+    case FEq(FTrue, e) => e.simplifyOnce
+    case FEq(e3, FTrue) => e3.simplifyOnce
+    case FEq(FNot(FTrue), e3) => FNot(e3.simplifyOnce)
+    case FEq(e3, FNot(FTrue)) => FNot(e3.simplifyOnce)
+    case FEq(e3, e4) => if (e3.expensiveEqual(e4)) FTrue else FEq(e3.simplifyOnce, e4.simplifyOnce)
+    case FImp(FNot(FTrue), _) => FTrue 
+    case FImp(_, FTrue) => FTrue
+    case FImp(e3, e4) => FImp(e3.simplifyOnce, e4.simplifyOnce)
+    case _ => this
+
+  def expensiveEqual(other:FExp):Boolean =
+    this.products(this.feats) == other.products(other.feats)
+
 object FExp:
   type Feature = String
+  type Product = Set[Feature]
 
   case object FTrue                extends FExp
   case class Feat(name:Feature)    extends FExp
@@ -45,3 +111,12 @@ object FExp:
   // to simplify notation
   case class FImp(e1:FExp,e2:FExp) extends FExp
   case class FEq(e1:FExp,e2:FExp)  extends FExp
+
+  def fe(fs:Set[Feature]):FExp = 
+    fs.map(Feat(_)).foldRight[FExp](FTrue)(_&&_)
+  
+  def lor(fes:Set[FExp]):FExp =
+    fes.foldRight[FExp](FNot(FTrue))(_||_)
+
+  def land(fes:Set[FExp]):FExp =
+    fes.foldRight[FExp](FTrue)(_&&_)

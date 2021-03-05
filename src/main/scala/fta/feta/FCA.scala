@@ -1,0 +1,70 @@
+package fta.feta
+
+import fta.eta.CA.{CAction, CState}
+import fta.features.FExp
+import fta.features.FExp.{FTrue, Feature}
+import fta.feta.FCA.FCTrans
+
+case class FCA(states:Set[CState]
+              , labels:Set[CAction], inputs:Set[CAction], outputs:Set[CAction]
+              , trans:Set[FCTrans]
+              , initial:Set[CState]
+              , fm:FExp, features:Set[Feature]
+              , name:String) :
+
+  def get(inputs:CAction): FCA =
+    FCA(states, labels, inputs.split(",").toSet, outputs, trans, initial,fm,features,name)
+
+  def pub(outputs:CAction): FCA =
+    FCA(states, labels, inputs, outputs.split(",").toSet, trans, initial,fm,features,name)
+
+  def init(inits:CState*): FCA =
+    FCA(states, labels, inputs, outputs, trans, inits.toSet,fm,features,name)
+
+  def +(t:FCTrans):FCA =
+    FCA(states+t.from+t.to, labels+t.by, inputs, outputs, trans+t, initial,fm,features++t.fe.feats,name)
+
+  def ++(ts:FCTrans*):FCA =
+    ts.foldRight(this)({case (t,a) => a+t})
+
+  def named(n:String):FCA =
+    FCA(states, labels, inputs, outputs, trans, initial, fm, features, n)
+    
+  def when(fe:FExp):FCA =
+    FCA(states, labels, inputs, outputs, trans, initial, fe, features++fe.feats, name)
+
+  def enabledTrans(st:CState):Set[FCTrans] =
+    trans.collect({case t if t.from==st => t})
+
+  def enabledTrans(st:CState,a:CAction):Set[FCTrans] =
+    trans.collect({case t if t.from==st && t.by == a => t})
+
+  def enabledTrans(st:CState,fs:Set[Feature]):Set[FCTrans] =
+    enabledTrans(st).filter(t=>t.fe.satisfiedBy(fs))
+  
+  def enabledActs(st:CState):Set[CAction] =
+    enabledTrans(st).map(t=>t.by)
+
+  def enabledActs(st:CState,fs:Set[Feature]):Set[CAction] =
+    enabledTrans(st,fs).map(t=>t.by)
+
+  def enabledIn(st: CState): Set[CAction] =
+    enabledActs(st).intersect(inputs)
+
+  def enabledIn(st: CState,fs:Set[Feature]): Set[CAction] =
+    enabledActs(st,fs).intersect(inputs)
+
+  def enabledOut(st: CState): Set[CAction] =
+    enabledActs(st).intersect(outputs)
+
+  def enabledOut(st: CState,fs:Set[Feature]): Set[CAction] =
+    enabledActs(st,fs).intersect(outputs)
+
+
+object FCA:
+
+  val newFCA:FCA = FCA(Set(), Set(), Set(), Set(), Set(), Set(),FTrue, Set(), "")
+
+  case class FCTrans(from:CState, by:CAction, fe:FExp, to:CState):
+    def by(a:CAction):FCTrans = FCTrans(from,a,fe,to)
+    def when(fExp:FExp) = FCTrans(from,by,fExp,to)

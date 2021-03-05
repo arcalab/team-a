@@ -1,12 +1,11 @@
 package fta.view
 
-import fta.eta.CReq._
+import fta.eta.Req._
 import fta.eta.ETA.StReq
 import fta.eta.System._
-import fta.eta.{CReq, ETA, System}
+import fta.eta.{Req, ETA, System}
 import fta.view.Show.showCReq
 
-import scala.math.Ordering.CachedReverse
 
 /**
  * Created by guillecledou on 26/01/2021
@@ -64,10 +63,10 @@ object Dot:
        |{ node [xlabel=<${dotReq(req.rcp)}<br/>${dotReq(req.rsp)}>] ${st}}
        |""".stripMargin
   
-  def dotReq(req:CReq)(using names:Map[Int,String]):String = req.simplify match
-    case CRTrue => ""
-    case CRFalse => "false"
+  def dotReq(req:Req)(using names:Map[Int,String]):String = req.simplify match
+    case RTrue => ""
+    case RFalse => "false"
     case Rsp(s,a) => s"""<font color ="green">rsp((${s.map(names).mkString(",")}),$a)</font>"""
     case Rcp(s,a) => s"""<font color ="blue">rcp((${s.map(names).mkString(",")}),$a)</font>"""
-    case CRAnd(r1,r2) => dotReq(r1) + "&and;" + dotReq(r2)
-    case CROr(r1,r2) => dotReq(r1) + "&#8897;" + dotReq(r2)
+    case RAnd(r1,r2) => dotReq(r1) + "&and;" + dotReq(r2)
+    case ROr(r1,r2) => dotReq(r1) + "&#8897;" + dotReq(r2)

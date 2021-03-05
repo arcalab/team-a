@@ -36,7 +36,6 @@ case class System(components:List[CA]):
   lazy val communicating:Set[CAction] = 
     inputs intersect outputs
   
-
   def inputDom(a:CAction):Set[CName] =
     components.zipWithIndex.collect{ case (ca, i) if ca.inputs.contains(a) => i }.toSet
 
