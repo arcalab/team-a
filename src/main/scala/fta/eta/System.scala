@@ -1,33 +1,40 @@
 package fta.eta
 
 import fta.eta.CA.{CAction, CState}
-import fta.eta.System.{CName, SysLabel, SysSt, SysTrans, crossProduct, mkJoinLbl, mkLbl, mkSt}
-import fta.lts.LTS
-import fta.lts.LTS.Transition
+import fta.eta.System._
+
 
 
 /**
  * Created by guillecledou on 26/02/2021
  */
 
-case class System(components:List[CA]) extends LTS[SysSt,SysLabel]:
-  type Trans = SysTrans
+case class System(components:List[CA]):
+  //type Trans = SysTrans
 
-  val states:Set[SysSt] = crossProduct(components.map(_.states.toList)).map(st=>SysSt(st)).toSet
+  lazy val states:Set[SysSt] = 
+    crossProduct(components.map(_.states.toList)).map(st=>SysSt(st)).toSet
 
-  val initial:Set[SysSt] = crossProduct(components.map(_.initial.toList)).map(st=>SysSt(st)).toSet
+  lazy val initial:Set[SysSt] = 
+    crossProduct(components.map(_.initial.toList)).map(st=>SysSt(st)).toSet
 
-  val trans:Set[Trans] = System.transitions(components)
+  lazy val trans:Set[SysTrans] = 
+    System.transitions(components)
   
-  val labels:Set[SysLabel] = trans.map(t=>t.by)
+  lazy val labels:Set[SysLabel] = 
+    trans.map(t=>t.by)
 
-  val actions:Set[CAction] = components.flatMap(_.labels).toSet
+  lazy val actions:Set[CAction] = 
+    components.flatMap(_.labels).toSet
 
-  val inputs:Set[CAction] = components.flatMap(_.inputs).toSet
+  lazy val inputs:Set[CAction] = 
+    components.flatMap(_.inputs).toSet
 
-  val outputs:Set[CAction] = components.flatMap(_.outputs).toSet
+  lazy val outputs:Set[CAction] = 
+    components.flatMap(_.outputs).toSet
 
-  val communicating:Set[CAction] = inputs intersect outputs
+  lazy val communicating:Set[CAction] = 
+    inputs intersect outputs
   
 
   def inputDom(a:CAction):Set[CName] =
@@ -35,6 +42,9 @@ case class System(components:List[CA]) extends LTS[SysSt,SysLabel]:
 
   def outputDom(a:CAction):Set[CName] =
     components.zipWithIndex.collect{ case (ca, i) if ca.outputs.contains(a) => i }.toSet
+
+  def enabled(st:SysSt):Set[CAction] =
+    trans.collect({case t if t.from==st => t.by.action})
 
   def localEn(st:SysSt):Map[CAction,Set[CName]] =
     var enabled:Map[CAction,Set[CName]] = Map()
@@ -55,7 +65,7 @@ object System:
 
   case class SysLabel(senders:Set[CName], action:CAction, receivers:Set[CName])
   case class SysSt(states:List[CState])
-  case class SysTrans(from:SysSt, by:SysLabel, to:SysSt) extends Transition[SysSt,SysLabel]
+  case class SysTrans(from:SysSt, by:SysLabel, to:SysSt) 
 
   def crossProduct[A](list:List[List[A]]):List[List[A]] = list match
     case Nil => List()

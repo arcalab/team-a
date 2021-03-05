@@ -3,7 +3,7 @@ package fta
 import fta.eta.CA.CTrans
 import fta.eta.ETA.SRange
 import fta.eta.{ETA, System}
-import fta.view.Dot
+import fta.view.{Dot, Mermaid}
 
 import scala.language.implicitConversions
 
@@ -25,4 +25,5 @@ object DSL:
   
   def toDot(e:ETA):String = Dot(e)
   def toDot(s:System):String = Dot(s)
+  def toMermaid(e:ETA):String = Mermaid(e)
 
