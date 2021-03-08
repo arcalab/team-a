@@ -17,23 +17,23 @@ import fta.feta.FSystem.FSysTrans
 
 case class FSTs(st:Map[CAction,PST]):
   
-  def satisfies(a:CAction,t:FSysTrans):Boolean =
-    st(a).satisfies(t)
+  def satisfies(t: FSysTrans):Boolean =
+    st(t.by.action).satisfies(t)
 
-  def satisfiedBy(a:CAction,t:FSysTrans):Set[Product] =
-    st(a).satisfiedBy(t)  
+  def satisfiedBy(t: FSysTrans):Set[Product] =
+    st(t.by.action).satisfiedBy(t)  
   
-  def satisfies(a:CAction,req:FRcp):Boolean =
-    st(a).satisfies(req)
+  def satisfies(req: FRcp):Boolean =
+    st(req.act).satisfies(req)
 
-  def satisfiedBy(a:CAction,req:FRcp):Set[Product] =
-    st(a).satisfiedBy(req)
+  def satisfiedBy(req: FRcp):Set[Product] =
+    st(req.act).satisfiedBy(req)
 
-  def satisfies(a:CAction,req:FRsp):Boolean =
-    st(a).satisfies(req)
+  def satisfies(req: FRsp):Boolean =
+    st(req.act).satisfies(req)
 
-  def satisfiedBy(a:CAction,req:FRsp):Set[Product] =
-    st(a).satisfiedBy(req)
+  def satisfiedBy(req: FRsp):Set[Product] =
+    st(req.act).satisfiedBy(req)
 
 
 object FSTs:

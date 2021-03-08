@@ -1,5 +1,6 @@
 package fta.view
 
+import fta.eta.CA.CAction
 import fta.eta.{ETA, Req}
 import fta.eta.Req._
 import fta.eta.ETA.StReq
@@ -78,16 +79,22 @@ object Mermaid:
     s"""${sid(t.from)} --> ${sid(t.to)}: ${mkLabel(t.by,names)}<br>${mkFExp(t.fe)}"""
 
   def mkFExp(fe:FExp):String = 
-    fontColor(fe.show,"purple")
+    color(fe.show,"purple")
   
  
   def freqMermaid(req:FReq)(using names:Map[Int,String]):String = req.simplify match
     case FRTrue => ""
     case FRFalse => "false"
-    case FRsp(s,a,fe) => fontColor(s"""rsp((${s.map(names(_)).mkString(",")}),$a,${mkFExp(fe)})""","green")
-    case FRcp(s,a,fe) => fontColor(s"""rcp((${s.map(names(_)).mkString(",")}),$a,${mkFExp(fe)})""","blue")
+    case FRsp(s,a,fe) => color(s"""rsp(${mkCNames(s.map(names(_)))},${mkAct(a)},${mkFExp(fe)})""","green")
+    case FRcp(s,a,fe) => color(s"""rcp(${mkCNames(s.map(names(_)))},${mkAct(a)},${mkFExp(fe)})""","blue")
     case FRAnd(r1,r2) => freqMermaid(r1) + " &and; " + freqMermaid(r2)
     case FROr(r1,r2) => freqMermaid(r1) + " &#8897; " + freqMermaid(r2)
     
-  def fontColor(text:String, color:String):String =
+  def mkAct(act:CAction):String =
+    color(act,"black")
+  
+  def mkCNames(names:Set[String]):String =
+    color(names.mkString("(",",",")"),"black")
+  
+  def color(text:String, color:String):String =
     s"""<font color ="${color}">${text}</font>"""

@@ -71,8 +71,8 @@ object Examples:
   lazy val fsys:FSystem = FSystem(fu1,fu2,fs)
   
   lazy val fst: FSTs = FSTs(
-      "reply" -> PST(Set("m") -> one2one,
-                     Set("s") -> one2any)
+      "reply" -> PST(Set("s") -> one2one,
+                     Set("m") -> ST(1 to 1, 1 to inf))
     )
 
   lazy val feta: FETA = FETA(fsys,fst)

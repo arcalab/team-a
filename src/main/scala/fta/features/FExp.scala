@@ -78,19 +78,19 @@ sealed trait FExp :
     case FAnd(FTrue,FTrue) => FTrue
     case FAnd(FTrue,r2) => r2.simplifyOnce
     case FAnd(r1,FTrue) => r1.simplifyOnce
-    case FAnd(r1,r2) if r1.expensiveEqual(r2) => r1.simplifyOnce
+    case FAnd(r1,r2) if r1 expensiveEqual r2 => r1.simplifyOnce
     case FAnd(r1,r2) => FAnd(r1.simplifyOnce,r2.simplifyOnce)
     case FOr(FTrue,_) => FTrue
     case FOr(_,FTrue) => FTrue
     case FOr(FNot(FTrue),r1) => r1.simplifyOnce
     case FOr(r1,FNot(FTrue)) => r1.simplifyOnce
-    case FOr(r1,r2) if r1.expensiveEqual(r2) => r1.simplifyOnce
+    case FOr(r1,r2) if r1 expensiveEqual  r2 => r1.simplifyOnce
     case FOr(r1,r2) => FOr(r1.simplifyOnce,r2.simplifyOnce)
     case FEq(FTrue, e) => e.simplifyOnce
     case FEq(e3, FTrue) => e3.simplifyOnce
     case FEq(FNot(FTrue), e3) => FNot(e3.simplifyOnce)
     case FEq(e3, FNot(FTrue)) => FNot(e3.simplifyOnce)
-    case FEq(e3, e4) => if (e3.expensiveEqual(e4)) FTrue else FEq(e3.simplifyOnce, e4.simplifyOnce)
+    case FEq(e3, e4) => if e3 expensiveEqual  e4 then FTrue else FEq(e3.simplifyOnce, e4.simplifyOnce)
     case FImp(FNot(FTrue), _) => FTrue 
     case FImp(_, FTrue) => FTrue
     case FImp(e3, e4) => FImp(e3.simplifyOnce, e4.simplifyOnce)
@@ -112,8 +112,8 @@ object FExp:
   case class FImp(e1:FExp,e2:FExp) extends FExp
   case class FEq(e1:FExp,e2:FExp)  extends FExp
 
-  def fe(fs:Set[Feature]):FExp = 
-    fs.map(Feat(_)).foldRight[FExp](FTrue)(_&&_)
+  def fe(featureSelections:Set[Product]):FExp = 
+    lor(featureSelections.map(p=>land(p.map(Feat(_)))))
   
   def lor(fes:Set[FExp]):FExp =
     fes.foldRight[FExp](FNot(FTrue))(_||_)
