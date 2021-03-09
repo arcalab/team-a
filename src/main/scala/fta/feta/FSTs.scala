@@ -12,9 +12,9 @@ import fta.feta.FSystem.FSysTrans
 
 /**
  * Created by guillecledou on 05/03/2021
+ * Featured Synchronization Types
+ * Maps an action to its synchronization type in each product (feature selection)
  */
-
-
 case class FSTs(st:Map[CAction,PST]):
   
   def satisfies(t: FSysTrans):Boolean =
@@ -42,6 +42,7 @@ object FSTs:
   def apply(apst:(CAction,PST)*):FSTs = FSTs(apst.toMap)
   
   /**
+   * Product Synchronization type 
    * Maps a set of features (product) with a synchronization type  
    * @param st
    */

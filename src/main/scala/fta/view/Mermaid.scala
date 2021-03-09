@@ -4,9 +4,10 @@ import fta.eta.CA.CAction
 import fta.eta.{ETA, Req}
 import fta.eta.Req._
 import fta.eta.ETA.StReq
+import fta.eta.System
 import fta.eta.System.{SysLabel, SysSt, SysTrans}
 import fta.features.FExp
-import fta.feta.{FETA, FReq}
+import fta.feta.{FETA, FReq, FSystem}
 import fta.feta.FReq._
 import fta.feta.FETA.StFReq
 import fta.feta.FSystem.FSysTrans
@@ -17,9 +18,33 @@ import fta.view.Show.showFExp
  * Created by guillecledou on 02/03/2021
  */
 
-//todo: simplify code repetition overall
+//todo: simplify code repetition overall (make type class)
 object Mermaid: 
 
+  def apply(s:FSystem):String =
+    val states = s.states.zipWithIndex.toMap
+    val names = s.components.zipWithIndex.map(c => c._2 -> c._1.name).toMap
+    s"""
+       |stateDiagram-v2
+       | ${s.initial.map(i=> s"""[*] --> ${states(i)}""").mkString("\n")}
+       | ${s.states.map(s=> mkState(s,states)).mkString("\n")}
+       | ${s.trans.map(t=>mkFTrans(t,states,names)).mkString("\n")}
+       |""".stripMargin
+
+  def apply(s:System):String =
+    val states = s.states.zipWithIndex.toMap
+    val names = s.components.zipWithIndex.map(c => c._2 -> c._1.name).toMap
+    s"""
+       |stateDiagram-v2
+       | ${s.initial.map(i=> s"""[*] --> ${states(i)}""").mkString("\n")}
+       | ${s.states.map(s=> mkState(s,states)).mkString("\n")}
+       | ${s.trans.map(t=>mkTrans(t,states,names)).mkString("\n")}
+       |""".stripMargin
+  
+  def mkState(s:SysSt,sid:Map[SysSt,Int]):String =
+    s""" ${sid(s)}: (${s.states.mkString(",")})
+       |""".stripMargin
+  
   def apply(e:ETA):String =
     val states = e.states.zipWithIndex.toMap
     val names = e.s.components.zipWithIndex.map(c => c._2 -> c._1.name).toMap

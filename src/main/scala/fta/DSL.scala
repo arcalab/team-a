@@ -6,7 +6,7 @@ import fta.eta.{ETA, System}
 import fta.features.FExp
 import fta.features.FExp._
 import fta.feta.FCA.FCTrans
-import fta.feta.FETA
+import fta.feta.{FETA, FSystem}
 import fta.view.{Dot, Mermaid}
 
 import scala.language.implicitConversions
@@ -34,8 +34,15 @@ object DSL:
   implicit def toFeat(s:String): Feat = Feat(s)
   def not(fe:FExp):FExp = FNot(fe)
   
+  // old: dot graph for System and ETA
   def toDot(e:ETA):String = Dot(e)
   def toDot(s:System):String = Dot(s)
+  
+  // mermaid graph for System and ETA
+  def toMermaid(s:System):String = Mermaid(s)
   def toMermaid(e:ETA):String = Mermaid(e)
+ 
+  // mermaid graph for Featured System and Featured ETA
+  def toMermaid(s:FSystem):String = Mermaid(s)
   def toMermaid(e:FETA):String = Mermaid(e)
 

@@ -2,6 +2,7 @@ package fta.features
 
 import fta.features.FExp._
 import fta.backend.Solver
+import fta.view.Show.showFExp
 
 sealed trait FExp :
   def feats: Set[Feature] = this match {
@@ -96,8 +97,11 @@ sealed trait FExp :
     case FImp(e3, e4) => FImp(e3.simplifyOnce, e4.simplifyOnce)
     case _ => this
 
-  def expensiveEqual(other:FExp):Boolean =
-    this.products(this.feats) == other.products(other.feats)
+  //todo: solve issue with empty clause in solver 
+  def expensiveEqual(other:FExp):Boolean = this == other
+    //this.products(this.feats) == other.products(other.feats)
+    
+  override def toString:String = this.show 
 
 object FExp:
   type Feature = String

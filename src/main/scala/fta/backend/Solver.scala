@@ -55,7 +55,9 @@ object Solver {
     //    val sols = solveAll(cnf)
     //    sols.map(x=>rebuildSol(x.toSet))
     //    resetVars()
-    val cnf = CNF.toCNFDimacs(e.removeSS.simplify)
+    val fe = e.removeSS.simplify
+    val cnf = CNF.toCNFDimacs(fe)
+    //println(s"${fe} clauses = ${cnf}")
     val sols = solveAll(cnf)
     sols.map(x=> CNF.rebuildTseitinSol(x.toSet))
   }
@@ -211,6 +213,7 @@ object Solver {
     var res:List[Array[Int]] = List()
     for (c <- cnf)
       solver.addClause(new VecInt(c.toArray))
+      
     while(mi.isSatisfiable) {
       //      println(mi.numberOfModelsFoundSoFar())
       val m = mi.model()
