@@ -2,6 +2,7 @@
 
 ## Requirements 
 
+- [JDK 11](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
 - [sbt](https://www.scala-sbt.org/)
 
 ## Use
