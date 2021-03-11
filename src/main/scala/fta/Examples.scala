@@ -79,6 +79,7 @@ object Examples:
 
   /* Maurice running example */
   
+
   // assuming feature model is (f or m) for both automata 
   val fmPaper = ("f" || "m")   
   
@@ -105,10 +106,12 @@ object Examples:
   val one2many = ST(1 to 1, 1 to inf)
   val any2one = ST(0 to inf, 1 to 1)
   def one2n(n:Int) = ST(1 to 1, n to n)
+  
   // assuming some random synchronisation type 
   def synctype(n:Int): FSTs = FSTs( // Feature Sync Types: for now, each action is mapped to a map
                                   // from each valid feature selection to the sync type of that action in that selection 
                                   // since the fm in this case is f xor m, there is only two valid selections
+
       "start" -> PST(Set("f") -> one2n(n),
                      Set("m") -> one2n(n),  
                      Set("m","f") -> one2n(n)
@@ -120,7 +123,7 @@ object Examples:
       "win" -> PST(Set("f") -> one2one,
                    Set("m") -> one2one,
                    Set("m","f") -> one2one
-                ),
+                )
   )
 
   lazy val fsys1:FSystem = FSystem(runner1,controller)
@@ -128,5 +131,7 @@ object Examples:
   
   lazy val fsys2:FSystem = FSystem(runner1,runner2,controller)
   lazy val feta2:FETA = FETA(fsys2,synctype(2))
+
+
 
   
