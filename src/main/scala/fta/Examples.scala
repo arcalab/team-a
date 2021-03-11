@@ -104,7 +104,7 @@ object Examples:
 
   val one2many = ST(1 to 1, 1 to inf)
   val any2one = ST(0 to inf, 1 to 1)
-  def one2n(n:Int) = ST(1 to 1, 1 to n)
+  def one2n(n:Int) = ST(1 to 1, n to n)
   // assuming some random synchronisation type 
   def synctype(n:Int): FSTs = FSTs( // Feature Sync Types: for now, each action is mapped to a map
                                   // from each valid feature selection to the sync type of that action in that selection 
@@ -124,6 +124,6 @@ object Examples:
   lazy val feta1:FETA = FETA(fsys1,synctype(1))
 
   lazy val fsys2:FSystem = FSystem(runner1,runner2,controller)
-  lazy val feta2:FETA = FETA(fsys1,synctype(2))
+  lazy val feta2:FETA = FETA(fsys2,synctype(2))
 
   
