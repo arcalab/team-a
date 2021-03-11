@@ -59,7 +59,7 @@ case class FETA(s:FSystem,st:FSTs):
    */
   protected def mkRcp(enabled:Map[CAction,Set[CName]],q:SysSt):FReq =
     val comb = enabled.map(en=>en._1 -> en._2.subsets().toSet)
-    val actReq = comb.map(c=>mkActRcp(c._1,c._2.filter(_.nonEmpty),q))
+    val actReq = comb.map(c=>mkActRcp2(c._1,c._2.filter(_.nonEmpty),q))
     actReq.foldRight[FReq](FRTrue)(FRAnd(_,_))
 
   /**
@@ -92,7 +92,7 @@ case class FETA(s:FSystem,st:FSTs):
 
   protected def mkRsp(enabled:Map[CAction,Set[CName]],q:SysSt):FReq =
     val comb = enabled.map(en=>en._1 -> en._2.subsets().toSet)
-    val actReq = comb.map(c=>mkActRsp(c._1,c._2.filter(_.nonEmpty),q))
+    val actReq = comb.map(c=>mkActRsp2(c._1,c._2.filter(_.nonEmpty),q))
     if actReq.isEmpty then FRTrue else actReq.foldRight[FReq](FRFalse)(FROr(_,_))
 
   /**

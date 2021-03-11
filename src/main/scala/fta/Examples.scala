@@ -79,8 +79,9 @@ object Examples:
 
   /* Maurice running example */
   
-  // assuming feature model is (f xor m) for both automata 
-  val fmPaper = ("f"||"m") //&& not("f"&&"m")  
+
+  // assuming feature model is (f or m) for both automata 
+  val fmPaper = ("f" || "m")   
   
   lazy val runner1:FCA = newFCA ++ (
     0 --> 1 by "start" when ("f" || "m"), 
@@ -107,22 +108,24 @@ object Examples:
   def one2n(n:Int) = ST(1 to 1, n to n)
   // assuming some random synchronisation type 
   def synctype(n:Int): FSTs = FSTs( // Feature Sync Types: for now, each action is mapped to a map
-                                  // from each valid feature selection to the sync type of that action in that selection 
-                                  // since the fm in this case is f xor m, there is only two valid selections
-      "start" -> PST(Set("f") -> one2n(n),               
-                     Set("m") -> one2n(n)
+                                  // from each valid feature selection to the sync type of that action in that selection
+      "start" -> PST(Set("f") -> one2n(n),
+                     Set("m") -> one2n(n),  
+                     Set("m","f") -> one2n(n)
                 ),
       "finish" -> PST(Set("f") -> one2one,
-                      Set("m") -> one2one
+                      Set("m") -> one2one,
+                      Set("m","f") -> one2one
                 ),
       "win" -> PST(Set("f") -> one2one,
-                   Set("m") -> one2one
-                ),
+                   Set("m") -> one2one,
+                   Set("m","f") -> one2one
+                )
   )
 
   lazy val fsys1:FSystem = FSystem(runner1,controller)
   lazy val feta1:FETA = FETA(fsys1,synctype(1))
-
+  
   lazy val fsys2:FSystem = FSystem(runner1,runner2,controller)
   lazy val feta2:FETA = FETA(fsys2,synctype(2))
 

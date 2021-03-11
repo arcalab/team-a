@@ -22,7 +22,11 @@ object CNF {
    * @param e feature expression
    * @return corresponding CNF in Dimacs format
    */
-  def toCNFDimacs(e:FExp): List[List[Int]] = e.removeSS.simplify match {
+  def toCNFDimacs(e:FExp): List[List[Int]] =
+    val cnf = toCNF(e)
+    cnf.filterNot(_.isEmpty) // todo: double check if it makes sense
+  
+  def toCNF(e:FExp): List[List[Int]] = e.removeSS.simplify match {
     case FTrue => List()
     case FNot(FTrue) => List(List())
     case FNot(Feat(f)) => List(List(getVar(FNot(Feat(f)))))
