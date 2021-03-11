@@ -109,9 +109,7 @@ object Examples:
   
   // assuming some random synchronisation type 
   def synctype(n:Int): FSTs = FSTs( // Feature Sync Types: for now, each action is mapped to a map
-                                  // from each valid feature selection to the sync type of that action in that selection 
-                                  // since the fm in this case is f xor m, there is only two valid selections
-
+                                  // from each valid feature selection to the sync type of that action in that selection
       "start" -> PST(Set("f") -> one2n(n),
                      Set("m") -> one2n(n),  
                      Set("m","f") -> one2n(n)
