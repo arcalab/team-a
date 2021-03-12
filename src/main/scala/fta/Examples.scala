@@ -81,27 +81,34 @@ object Examples:
   
 
   // assuming feature model is (f or m) for both automata 
-  val fmPaper = ("f" || "m")   
-  
+  val fmPaper = ("f" || "m") 
+  val xorFM = ("f" || "m") && not("f"&& "m")
+  // female 
   lazy val runner1:FCA = newFCA ++ (
-    0 --> 1 by "start" when ("f" || "m"), 
+    0 --> 1 by "start" when "f", 
     1 --> 2 by "run", // by default, the featured expression of a transition is true 
     2 --> 0 by "finish",
     2 --> 0 by "win"
-  ) get "start" pub "finish,win,run" init 0 named "r1" when fmPaper
-  
-  lazy val runner2:FCA = runner1 named "r2"
+  ) get "start,win,finish" init 0 named "r1" when fmPaper
+  // male 
+  lazy val runner2:FCA = newFCA ++ (
+    0 --> 1 by "start" when "m",
+    1 --> 2 by "run", // by default, the featured expression of a transition is true 
+    2 --> 0 by "finish",
+    2 --> 0 by "win"
+  ) get "start,win,finish" init 0 named "r2" when fmPaper
   
   lazy val controller:FCA = newFCA ++ (
     0 --> 0 by "finish",
     0 --> 1 by "start",
     1 --> 2 by "win" when "f",
+    1 --> 0 by "win" when xorFM,
     2 --> 2 by "finish" when "f",
     2 --> 0 by "win" when "m",
     1 --> 3 by "win" when "m",
     3 --> 3 by "finish" when "m",
     3 --> 0 by "win" when "f"
-  ) get "win,finish" pub "start" init 0 when fmPaper named "c"
+  )  pub "start,win,finish" init 0 when fmPaper named "c"
 
   val one2many = ST(1 to 1, 1 to inf)
   val any2one = ST(0 to inf, 1 to 1)

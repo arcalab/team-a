@@ -86,7 +86,7 @@ object FSystem:
     var ts:Set[FSysTrans]= Set()
     // joined
     for st<-strans;t<-c.trans; if (st.by.action == t.by) do
-      ts+=FSysTrans(mkSt(st.from,t.from),mkJoinLbl(st.by,c,cn),st.fe||t.fe,mkSt(st.to,t.to))
+      ts+=FSysTrans(mkSt(st.from,t.from),mkJoinLbl(st.by,c,cn),st.fe&&t.fe,mkSt(st.to,t.to))
     // only left
     for loc<-strans.flatMap(t=>Set(t.from,t.to)); t<-c.trans do
       ts+=FSysTrans(mkSt(loc,t.from),mkLbl(t.by,c,cn),t.fe,mkSt(loc,t.to))
