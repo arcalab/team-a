@@ -46,7 +46,7 @@ case class FETA(s:FSystem,st:FSTs):
 
   protected def feTrans(t:FSysTrans):FSysTrans = 
     if communicating.contains(t.by.action) then
-      FSysTrans(t.from,t.by,t.fe && fe(st.satisfiedBy(t)),t.to)    
+      FSysTrans(t.from,t.by,t.fe && fe(st.satisfiedBy(t),features),t.to)
     else t   
     
   protected lazy val (reachableSt,reachableTrans):(Set[SysSt],Set[FSysTrans]) = reachable()
@@ -88,7 +88,7 @@ case class FETA(s:FSystem,st:FSTs):
   protected def mkRcp(a:CAction,participants:Set[CName],q:SysSt):Option[FRcp] =
     val req = FRcp(participants,a,feReq(participants,a,q))
     val prods = st.satisfiedBy(req)
-    if prods.isEmpty then None else Some(FRcp(req.at,req.act,req.fe && fe(prods)))
+    if prods.isEmpty then None else Some(FRcp(req.at,req.act,req.fe && fe(prods,features)))
 
   protected def mkRsp(enabled:Map[CAction,Set[CName]],q:SysSt):FReq =
     val comb = enabled.map(en=>en._1 -> en._2.subsets().toSet)
@@ -124,7 +124,7 @@ case class FETA(s:FSystem,st:FSTs):
   protected def mkRsp(a:CAction,participants:Set[CName],q:SysSt):Option[FRsp] =
     val req = FRsp(participants,a,feReq(participants,a,q))
     val prods = st.satisfiedBy(req)
-    if prods.isEmpty then None else Some(FRsp(req.at,req.act,req.fe && inFe(participants,q) && fe(prods)))
+    if prods.isEmpty then None else Some(FRsp(req.at,req.act,req.fe && inFe(participants,q) && fe(prods,features)))
 
   protected def feReq(participants:Set[CName], a:CAction, q:SysSt):FExp =
     var fe:Set[FExp] = Set()
@@ -136,7 +136,7 @@ case class FETA(s:FSystem,st:FSTs):
   protected def inFe(participants:Set[CName], q:SysSt):FExp =
     //val prods = fm.products(features)
     var validProds = products.filter(p=>inputOnlyEn(q,participants,p))
-    fe(validProds)//lor(validProds.map(p=>fe(p)))
+    fe(validProds,features)//lor(validProds.map(p=>fe(p)))
 
   protected def reachable():(Set[SysSt],Set[FSysTrans]) =
     var visited:Set[SysSt] = initial

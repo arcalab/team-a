@@ -19,6 +19,7 @@ sealed trait FExp :
   def ||(other:FExp):FExp   = FOr(this,other)
   def -->(other:FExp):FExp  = FImp(this,other)
   def <->(other:FExp):FExp  = FEq(this,other)
+  def xor(other:FExp):FExp  = (this || other) && FNot(this && other)
 
   /**
    * Checks if a given instantiation of features satisfies the feature expression
@@ -96,8 +97,7 @@ sealed trait FExp :
     case FImp(_, FTrue) => FTrue
     case FImp(e3, e4) => FImp(e3.simplifyOnce, e4.simplifyOnce)
     case _ => this
-
-  //todo: solve issue with empty clause in solver 
+  
   def expensiveEqual(other:FExp):Boolean = this == other
     //this.products(this.feats) == other.products(other.feats)
     
@@ -116,8 +116,9 @@ object FExp:
   case class FImp(e1:FExp,e2:FExp) extends FExp
   case class FEq(e1:FExp,e2:FExp)  extends FExp
 
-  def fe(featureSelections:Set[Product]):FExp = 
-    lor(featureSelections.map(p=>land(p.map(Feat(_)))))
+  def fe(featureSelections:Set[Product],feats:Set[Feature]):FExp = 
+    lor(featureSelections.map(p=>
+      land(p.map(Feat(_))) && FNot(lor((feats--p).map(Feat(_))))))
   
   def lor(fes:Set[FExp]):FExp =
     fes.foldRight[FExp](FNot(FTrue))(_||_)
