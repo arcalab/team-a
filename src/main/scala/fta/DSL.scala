@@ -46,3 +46,9 @@ object DSL:
   def toMermaid(s:FSystem):String = Mermaid(s)
   def toMermaid(e:FETA):String = Mermaid(e)
 
+  // cross product of a list of tuples
+  def crossProduct[A](list:List[List[A]]):List[List[A]] = list match
+    case Nil => List()
+    case l::Nil => l.map(List(_))
+    case l::ls => for e <- l ; cp <- crossProduct(ls) yield List(e) ++ cp
+

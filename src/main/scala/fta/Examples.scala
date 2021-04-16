@@ -75,7 +75,7 @@ object Examples:
                      Set("m") -> ST(1 to 1, 1 to inf))
     )
 
-  lazy val feta: FETA = FETA(fsys,fst)
+  lazy val feta: FETA = FETA(fsys, fst)
 
   /* Maurice running example */
   
@@ -131,10 +131,10 @@ object Examples:
   )
 
   lazy val fsys1:FSystem = FSystem(runner1,controller)
-  lazy val feta1:FETA = FETA(fsys1,synctype(1))
+  lazy val feta1:FETA = FETA(fsys1, synctype(1))
   
   lazy val fsys2:FSystem = FSystem(runner1,runner2,controller)
-  lazy val feta2:FETA = FETA(fsys2,synctype(2))
+  lazy val feta2:FETA = FETA(fsys2, synctype(2))
 
   /* Simplified chat with variablity */ 
 
@@ -179,4 +179,4 @@ object Examples:
   )
 
   lazy val fsys3:FSystem = FSystem(user1,user2,server)
-  lazy val feat3:FETA = FETA(fsys3,stEx3)
+  lazy val feat3:FETA = FETA(fsys3, stEx3)
