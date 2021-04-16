@@ -7,7 +7,7 @@ import fta.eta.ETA.StReq
 import fta.eta.System
 import fta.eta.System.{SysLabel, SysSt, SysTrans}
 import fta.features.FExp
-import fta.feta.{FETA, FReq, FSystem}
+import fta.feta.{FETA, FReq, FSystem, Generate}
 import fta.feta.FReq._
 import fta.feta.FETA.StFReq
 import fta.feta.FSystem.FSysTrans
@@ -85,7 +85,7 @@ object Mermaid:
   def apply(e:FETA):String =
     val states = e.states.zipWithIndex.toMap
     val names = e.s.components.zipWithIndex.map(c => c._2 -> c._1.name).toMap
-    val reqs = e.requirements()
+    val reqs = Generate.freq(e) //e.requirements()
     s"""
        |stateDiagram-v2
        | ${e.initial.map(i=> s"""[*] --> ${states(i)}""").mkString("\n")}

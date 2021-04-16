@@ -12,7 +12,7 @@ import fta.feta.FSystem.FSysTrans
 
 /**
  * Created by guillecledou on 05/03/2021
- * Featured Synchronization Types
+ * Featured Synchronisation Type Specification
  * Maps an action to its synchronization type in each product (feature selection)
  */
 case class FSTs(st:Map[CAction,PST]):
