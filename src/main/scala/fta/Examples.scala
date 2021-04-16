@@ -89,14 +89,14 @@ object Examples:
     1 --> 2 by "run", // by default, the featured expression of a transition is true 
     2 --> 0 by "finish",
     2 --> 0 by "win"
-  ) get "start,win,finish" init 0 named "r1" when fmPaper
+  ) get "start,win,finish" init 0 named "r1" //when fmPaper
   // male 
   lazy val runner2:FCA = newFCA ++ (
     0 --> 1 by "start" when "m",
     1 --> 2 by "run", // by default, the featured expression of a transition is true 
     2 --> 0 by "finish",
     2 --> 0 by "win"
-  ) get "start,win,finish" init 0 named "r2" when fmPaper
+  ) get "start,win,finish" init 0 named "r2"// when fmPaper
   
   lazy val controller:FCA = newFCA ++ (
     0 --> 0 by "finish",
@@ -136,4 +136,47 @@ object Examples:
   lazy val fsys2:FSystem = FSystem(runner1,runner2,controller)
   lazy val feta2:FETA = FETA(fsys2,synctype(2))
 
-  
+  /* Simplified chat with variablity */ 
+
+  lazy val user1 : FCA = newFCA ++ (
+    0 --> 1 by "join" when "s",
+    1 --> 2 by "confirm" when "s",
+    0 --> 2 by "join" when "o",
+    2 --> 0 by "leave",
+    //2 --> 2 by "msg",
+    //2 --> 2 by "fwd"
+  ) get "confirm" pub "join,leave" when ("s" xor "o") init 0 named "u1"
+
+  lazy val user2 : FCA = user1 named "u2"
+
+  lazy val server: FCA = newFCA ++ (
+    0 --> 1 by "join" when "s",
+    1 --> 0 by "confirm" when "s",
+    0 --> 0 by "join" when "o",
+    0 --> 0 by "leave", 
+    //0 --> 3 by "msg", 
+    //3 --> 0 by "fwd",
+    //3 --> 0 by "reject"
+  ) get "join,leave" pub "confirm" when ("s" xor "o") init 0 named "s"
+
+  val many2one = ST(1 to inf, 1 to 1)
+  def stEx3: FSTs = FSTs(
+    "join" -> PST(Set("s") -> one2one,
+      Set("o") -> many2one
+    ),
+    "confirm" -> PST(Set("s") -> one2one,
+      Set("o") -> one2one
+    ),
+    "leave" -> PST(Set("s") -> one2one,
+      Set("o") -> many2one
+    )//,
+    //"msg" -> PST(Set("s") -> one2one,
+    //  Set("o") -> one2one
+    //),
+    //"fwd" -> PST(Set("s") -> one2one,
+    //  Set("o") -> one2many
+    //),
+  )
+
+  lazy val fsys3:FSystem = FSystem(user1,user2,server)
+  lazy val feat3:FETA = FETA(fsys3,stEx3)
