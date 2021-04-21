@@ -56,9 +56,9 @@ object Interpret:
     fst <- interpretProdSepc(fstSpec.prodSpec)
     dom = fst.st.keySet
     missing = fs.actions -- dom
-    res <- if (fstSpec.defualt.isDefined) then {
+    res <- if (fstSpec.defualt.isDefined) then
       mkDefault(missing,fstSpec.defualt.get,fst)
-    } else ReaderT.pure[ErrorOr,FSystem,FSTs](fst)
+    else ReaderT.pure[ErrorOr,FSystem,FSTs](fst)
   } yield res
 
   def interpretProdSepc(ps:List[ProdSpec]):InterpretFST[FSTs] = for {

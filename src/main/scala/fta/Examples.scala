@@ -182,7 +182,8 @@ object Examples:
   lazy val feat3:FETA = FETA(fsys3, stEx3)
 
   lazy val spec:String =
-    s"""FCA user (confirm)(join,leave) = {
+    s"""
+       |FCA user (confirm)(join,leave) = {
        |  start 0
        |  0 --> 1 by join if s
        |  1 --> 2 by confirm if s

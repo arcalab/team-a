@@ -16,12 +16,12 @@ case class FETA(s: FSystem, fst: FSTs):
   lazy val trans:Set[FSysTrans]   = fts.trans
   lazy val states:Set[SysSt]      = fts.states
   lazy val labels:Set[SysLabel]   = fts.trans.map(t=>t.by).toSet
+  lazy val fm:FExp                     = fts.fm
   lazy val features:Set[Feature]       = fts.features
   lazy val actions:Set[CAction]        = fts.actions
   lazy val inputs:Set[CAction]         = s.inputs
   lazy val outputs:Set[CAction]        = s.outputs
   lazy val communicating:Set[CAction]  = s.communicating
-  lazy val fm:FExp                = fts.fm
   lazy val products:Set[Product]  = s.products //s.fm.products(s.features)
 
   //def requirements():Map[SysSt,StFReq] =

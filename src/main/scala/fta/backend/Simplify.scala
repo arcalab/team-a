@@ -17,8 +17,8 @@ object Simplify:
   /**
    * FTS Simplify
    */
-  given ftsSimplify as Simplify[FTS]:
 
+  given ftsSimplify as Simplify[FTS]:
     extension (fts:FTS) def simplify:FTS =
       val (ns,nt) = reachable(fts)
       FTS(ns,fts.actions,nt,fts.initial,fts.fm.simplify,fts.features,fts.name)
