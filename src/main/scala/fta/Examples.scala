@@ -180,3 +180,31 @@ object Examples:
 
   lazy val fsys3:FSystem = FSystem(user1,user2,server)
   lazy val feat3:FETA = FETA(fsys3, stEx3)
+
+  lazy val spec:String =
+    s"""
+       |FCA user (confirm)(join,leave) = {
+       |  start 0
+       |  fm s xor o
+       |  0 --> 1 by join if s
+       |  1 --> 2 by confirm if s
+       |  0 --> 2 by join if o
+       |  2 --> 0 by leave
+       |}
+       |
+       |FCA server (join,leave)(confirm) = {
+       |  start 0
+       |  fm s xor o
+       |  0 --> 1 by join if s
+       |  1 --> 0 by confirm if s
+       |  0 --> 0 by join if o
+       |  0 --> 0 by leave
+       |}
+       |
+       |FS = (u1->user,u2->user,s->server)
+       |
+       |FST = {
+       | default = one to one
+       | {o}:join,leave = many to one
+       |}
+       |""".stripMargin
