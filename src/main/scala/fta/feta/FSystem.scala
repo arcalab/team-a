@@ -35,9 +35,10 @@ case class FSystem(components:List[FCA],userFm:Option[FExp],userProducts:Option[
 
   lazy val fm:FExp = userFm.getOrElse(land(components.map(ca=> ca.fm).toSet))
   
-  val features:Set[Feature] = components.flatMap(ca=>ca.features).toSet
+  val features:Set[Feature] = 
+    components.flatMap(ca=>ca.features).toSet++userFm.getOrElse(FTrue).feats
 
-  lazy val products:Set[Product] = userProducts.getOrElse(Set()) //fm.products(features))
+  lazy val products:Set[Product] = userProducts.getOrElse(Set(Set())) //fm.products(features))
 
   def inputDom(a:CAction):Set[CName] =
     components.zipWithIndex.collect{ case (ca, i) if ca.inputs.contains(a) => i }.toSet
