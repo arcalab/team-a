@@ -221,21 +221,5 @@ object Solver {
     }
     res
   }
-
-  //  ISolver solver = SolverFactory.newDefault();
-  //  ModelIterator mi = new ModelIterator(solver);
-  //  solver.setTimeout(3600); // 1 hour timeout
-  //  Reader reader = new InstanceReader(mi);
-  //
-  //  // filename is given on the command line
-  //  try {
-  //    boolean unsat = true;
-  //    IProblem problem = reader.parseInstance(args[0]);
-  //    while (problem.isSatisfiable()) {
-  //      unsat = false;
-  //      int [] model = problem.model();
-  //      // do something with each model
-  //    }
-
   
 }

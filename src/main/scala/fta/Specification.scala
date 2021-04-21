@@ -3,13 +3,14 @@ package fta
 import fta.Specification.FSTSpec
 import fta.eta.CA.CAction
 import fta.eta.ST
+import fta.features.FExp
 import fta.feta.{FCA, FSTs, FSystem}
 import fta.features.FExp.Product
 
 /**
  * Created by guillecledou on 16/04/2021
  */
-case class Specification(fcas:Set[FCA],instances:Map[String,String],fst:FSTSpec)
+case class Specification(fcas:Set[FCA],instances:Map[String,String],fm:FExp,fst:FSTSpec)
 
 object Specification:
 

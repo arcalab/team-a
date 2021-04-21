@@ -182,10 +182,8 @@ object Examples:
   lazy val feat3:FETA = FETA(fsys3, stEx3)
 
   lazy val spec:String =
-    s"""
-       |FCA user (confirm)(join,leave) = {
+    s"""FCA user (confirm)(join,leave) = {
        |  start 0
-       |  fm s xor o
        |  0 --> 1 by join if s
        |  1 --> 2 by confirm if s
        |  0 --> 2 by join if o
@@ -194,7 +192,6 @@ object Examples:
        |
        |FCA server (join,leave)(confirm) = {
        |  start 0
-       |  fm s xor o
        |  0 --> 1 by join if s
        |  1 --> 0 by confirm if s
        |  0 --> 0 by join if o
@@ -202,6 +199,8 @@ object Examples:
        |}
        |
        |FS = (u1->user,u2->user,s->server)
+       |
+       |FM = s xor o
        |
        |FST = {
        | default = one to one

@@ -9,6 +9,7 @@ import fta.eta.ST
 import fta.feta.FSTs
 import fta.feta.FSTs.PST
 import fta.feta.{FCA, FETA, FSystem}
+import fta.features.FExp.Product
 
 /**
  * Created by guillecledou on 19/04/2021
@@ -24,13 +25,24 @@ object Interpret:
   def apply(s:Specification):ErrorOr[FETA] =
     interpret(s.instances.toList).run(s.fcas.map(f=>f.name->f).toMap) match
       case Left(err) => Left(err)
-      case Right(fs) => interpret(s.fst).run(fs) match
-        case Right(fst) => Right(FETA(fs, fst))
-        case Left(err) => Left(err)
+      case Right(fs) =>
+          val nfs = FSystem(fs.components,Some(s.fm),None)
+          interpret(s.fst).run(nfs) match
+            case Right(fst) => Right(FETA(nfs, fst))
+            case Left(err) => Left(err)
+
+  def interpretInServer(s:Specification,products:Set[Product]):ErrorOr[FETA] =
+    interpret(s.instances.toList).run(s.fcas.map(f=>f.name->f).toMap) match
+      case Left(err) => Left(err)
+      case Right(fs) =>
+        val nfs = FSystem(fs.components,Some(s.fm),Some(products))
+        interpret(s.fst).run(nfs) match
+          case Right(fst) => Right(FETA(nfs, fst))
+          case Left(err) => Left(err)
 
   def interpret(fsSpec:List[(String,String)]):InterpretFS[FSystem] = for {
     nfcas <- fsSpec.traverse(p=>interpret(p))
-  } yield FSystem(nfcas)
+  } yield FSystem(nfcas,None,None)
 
   def interpret(fsSpec:(String,String)):InterpretFS[FCA] = for {
     fcas <- ReaderT.ask[ErrorOr,St]
@@ -45,7 +57,6 @@ object Interpret:
     dom = fst.st.keySet
     missing = fs.actions -- dom
     res <- if (fstSpec.defualt.isDefined) then {
-      println(s"upto now: ${fst}")
       mkDefault(missing,fstSpec.defualt.get,fst)
     } else ReaderT.pure[ErrorOr,FSystem,FSTs](fst)
   } yield res
@@ -74,7 +85,6 @@ object Interpret:
     fs <- ReaderT.ask[ErrorOr,FSystem]
     ps = fst.st.values
     ufst <- fst.st.toList.traverse(e=>mkDefaultProd(e._1,e._2,default))
-    _= println(s"update each pst: ${ufst}")
     nfst = FSTs((ufst.toMap++missing.map(a=>a->PST(fs.products.map(p=>p->default).toMap)).toMap))
   } yield nfst
 

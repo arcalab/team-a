@@ -64,3 +64,8 @@ object DSL:
     case Left(err) => throw new RuntimeException("Interpretation failed: " + err)
     case Right(feta) => feta
   }
+
+  def interpretInServer(spec:Specification,products:Set[Product]):FETA = Interpret.interpretInServer(spec,products) match {
+    case Left(err) => throw new RuntimeException("Interpretation failed: " + err)
+    case Right(feta) => feta
+  }

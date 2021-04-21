@@ -8,7 +8,7 @@ import fta.features.FExp
 import fta.features.FExp._
 import fta.feta.FSystem.FSysTrans
 
-case class FSystem(components:List[FCA]):
+case class FSystem(components:List[FCA],userFm:Option[FExp],userProducts:Option[Set[Product]]):
   lazy val states:Set[SysSt] =
     crossProduct(components.map(_.states.toList)).map(st=>SysSt(st)).toSet
 
@@ -33,11 +33,11 @@ case class FSystem(components:List[FCA]):
   lazy val communicating:Set[CAction] =
     inputs intersect outputs
 
-  val fm:FExp = land(components.map(ca=> ca.fm).toSet)
+  lazy val fm:FExp = userFm.getOrElse(land(components.map(ca=> ca.fm).toSet))
   
   val features:Set[Feature] = components.flatMap(ca=>ca.features).toSet
 
-  lazy val products:Set[Product] = fm.products(features)
+  lazy val products:Set[Product] = userProducts.getOrElse(Set()) //fm.products(features))
   
   def inputDom(a:CAction):Set[CName] =
     components.zipWithIndex.collect{ case (ca, i) if ca.inputs.contains(a) => i }.toSet
@@ -110,4 +110,8 @@ object FSystem:
 
   protected def mkSt(st:SysSt, s:CState):SysSt = SysSt(st.states.appended(s))
 
-  def apply(cas:FCA*): FSystem = FSystem(cas.toList)
+  def apply(fcas:FCA*): FSystem =
+    FSystem(fcas.toList,None,None)
+
+  def apply(fm:FExp,products:Set[Product],fcas:FCA*):FSystem =
+    FSystem(fcas.toList,Some(fm),Some(products))

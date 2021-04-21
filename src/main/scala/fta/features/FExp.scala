@@ -101,7 +101,7 @@ sealed trait FExp :
   def expensiveEqual(other:FExp):Boolean = this == other
     //this.products(this.feats) == other.products(other.feats)
     
-  override def toString:String = this.show 
+  // override def toString:String = this.show 
 
 object FExp:
   type Feature = String

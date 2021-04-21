@@ -39,7 +39,7 @@ object Parser extends RegexParsers:
   def block[A](parser: Parser[A]): Parser[A] = "{" ~> parser <~ "}"
 
   def spec:Parser[Specification] =
-    rep(fca)~fsys~fsts ^^ {case fcas~fsys~fst=>Specification(fcas.toSet,fsys,fst)}
+    rep(fca)~fsys~fm~fsts ^^ {case fcas~fsys~fm~fst=>Specification(fcas.toSet,fsys,fm,fst)}
 
   def fca:Parser[FCA] =
     "FCA"~lowerCaseId~par(actions)~par(actions)~"="~block(fcaBody) ^^ {
@@ -101,7 +101,7 @@ object Parser extends RegexParsers:
     "start"~>num
 
   def fm:Parser[FExp] =
-    "fm"~>fexp
+    "FM"~>"="~>fexp
 
   def transitions:Parser[List[FCTrans]] =
     rep(transition)

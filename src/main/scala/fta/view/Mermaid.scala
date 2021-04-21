@@ -112,8 +112,8 @@ object Mermaid:
     case FRFalse => "false"
     case FRsp(s,a,fe) => color(s"""rsp(${mkCNames(s.map(names(_)))},${mkAct(a)},${mkFExp(fe)})""","green")
     case FRcp(s,a,fe) => color(s"""rcp(${mkCNames(s.map(names(_)))},${mkAct(a)},${mkFExp(fe)})""","blue")
-    case FRAnd(r1,r2) => freqMermaid(r1) + " &and; " + freqMermaid(r2)
-    case FROr(r1,r2) => freqMermaid(r1) + " &#8897; " + freqMermaid(r2)
+    case FRAnd(r1,r2) => freqMermaid(r1) + " #8743; " + freqMermaid(r2)
+    case FROr(r1,r2) => freqMermaid(r1) + " #8897; " + freqMermaid(r2)
     
   def mkAct(act:CAction):String =
     color(act,"black")
