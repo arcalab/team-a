@@ -15,8 +15,14 @@ case class FCA(states:Set[CState]
   def get(inputs:CAction): FCA =
     FCA(states, labels, inputs.split(",").toSet, outputs, trans, initial,fm,features,name)
 
+  def get(inputs:Set[CAction]): FCA =
+    FCA(states, labels, inputs, outputs, trans, initial,fm,features,name)
+
   def pub(outputs:CAction): FCA =
     FCA(states, labels, inputs, outputs.split(",").toSet, trans, initial,fm,features,name)
+
+  def pub(outputs:Set[CAction]):FCA =
+    FCA(states, labels, inputs, outputs, trans, initial,fm,features,name)
 
   def init(inits:CState*): FCA =
     FCA(states, labels, inputs, outputs, trans, inits.toSet,fm,features,name)
@@ -25,6 +31,9 @@ case class FCA(states:Set[CState]
     FCA(states+t.from+t.to, labels+t.by, inputs, outputs, trans+t, initial,fm,features++t.fe.feats,name)
 
   def ++(ts:FCTrans*):FCA =
+    ts.foldRight(this)({case (t,a) => a+t})
+
+  def ++(ts:List[FCTrans]):FCA = // needed because splat operator (:_*) not working in Scala 3
     ts.foldRight(this)({case (t,a) => a+t})
 
   def named(n:String):FCA =

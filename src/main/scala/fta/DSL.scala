@@ -52,3 +52,15 @@ object DSL:
     case l::Nil => l.map(List(_))
     case l::ls => for e <- l ; cp <- crossProduct(ls) yield List(e) ++ cp
 
+  val one:SRange = 1 to 1
+  val any:SRange = 0 to inf
+  val many:SRange = 1 to inf
+
+  def parse(spec: String): Specification = Parser.parse(spec) match
+    case Parser.Success(res, _) => res
+    case f: Parser.NoSuccess => throw new RuntimeException("Parser failed: " + f)
+
+  def interpret(spec:Specification):FETA = Interpret(spec) match {
+    case Left(err) => throw new RuntimeException("Interpretation failed: " + err)
+    case Right(feta) => feta
+  }

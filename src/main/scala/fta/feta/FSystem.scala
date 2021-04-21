@@ -36,6 +36,8 @@ case class FSystem(components:List[FCA]):
   val fm:FExp = land(components.map(ca=> ca.fm).toSet)
   
   val features:Set[Feature] = components.flatMap(ca=>ca.features).toSet
+
+  lazy val products:Set[Product] = fm.products(features)
   
   def inputDom(a:CAction):Set[CName] =
     components.zipWithIndex.collect{ case (ca, i) if ca.inputs.contains(a) => i }.toSet

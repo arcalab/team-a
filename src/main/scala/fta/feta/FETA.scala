@@ -22,7 +22,7 @@ case class FETA(s: FSystem, fst: FSTs):
   lazy val inputs:Set[CAction]         = s.inputs
   lazy val outputs:Set[CAction]        = s.outputs
   lazy val communicating:Set[CAction]  = s.communicating
-  lazy val products:Set[Product]  = s.fm.products(s.features)
+  lazy val products:Set[Product]  = s.products //s.fm.products(s.features)
 
   //def requirements():Map[SysSt,StFReq] =
   //  var req:Map[SysSt,StFReq] = Map()
