@@ -17,7 +17,7 @@ trait Show[-A]:
   extension (a:A) def show: String
 
 object Show: 
-  given showCReq : Show[Req] with 
+  given showCReq as Show[Req]:
     extension (a:Req) def show: String = a.simplify match {
       case RTrue => "true"
       case RFalse => "false"
@@ -27,11 +27,11 @@ object Show:
       case ROr(r1, r2) => "(" ++ r1.show ++ "||" ++ r2.show ++ ")"
     }
 
-  given showLabel: Show[SysLabel] with 
+  given showLabel as Show[SysLabel]: 
     extension (a:SysLabel) def show:String =
       s"""{${a.senders.mkString(",")}, ${a.action},{${a.receivers.mkString(",")}"""
 
-  given showFExp: Show[FExp] with 
+  given showFExp as Show[FExp]:
     extension (fe:FExp) def show:String = showFE(fe.simplify)
     
     def showFE(fe: FExp): String = fe.simplify match 
