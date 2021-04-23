@@ -75,6 +75,7 @@ sealed trait FExp :
     case FEq(e1,e2) => FAnd(FImp(e1,e2).removeSS,FImp(e2,e1).removeSS)
   
   protected def simplifyOnce:FExp = this match
+    case FNot(FNot(f)) => f
     case FAnd(FNot(FTrue),_) => FNot(FTrue)
     case FAnd(_,FNot(FTrue)) => FNot(FTrue)
     case FAnd(FTrue,FTrue) => FTrue

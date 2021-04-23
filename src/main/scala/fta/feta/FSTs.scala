@@ -40,6 +40,10 @@ object FSTs:
   type FeatureST = Map[Product,ST]
 
   def apply(apst:(CAction,PST)*):FSTs = FSTs(apst.toMap)
+
+  def complete(fst:FSTs,acts:Set[CAction],prods:Set[Product]):Boolean =
+    println(s"fst: ${fst}")
+    (fst.st.keySet == acts) && fst.st.values.forall(pst=> pst.products == prods)
   
   /**
    * Product Synchronization type 
@@ -47,7 +51,7 @@ object FSTs:
    * @param st
    */
   case class PST(st:FeatureST):
-    val products = st.keySet
+    val products:Set[Product] = st.map(k=>k._1).toSet //st.keySet
     
     /* satisfaction of transitions */
     

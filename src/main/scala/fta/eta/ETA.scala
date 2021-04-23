@@ -56,11 +56,12 @@ case class ETA(s:System,st:STs):
   protected def mkRsp(enabled:Map[CAction,Set[CName]]):Req =
     val comb = enabled.map(en=>en._1 -> en._2.subsets().toSet)
     val actReq = comb.map(c=>mkActRsp(c._1,c._2.filter(_.nonEmpty)))
+      .collect({case Some(r) => r})
     if actReq.isEmpty then RTrue else actReq.foldRight[Req](RFalse)(ROr(_,_))
 
-  protected def mkActRsp(a:CAction, comb:Set[Set[CName]]):Req =
+  protected def mkActRsp(a:CAction, comb:Set[Set[CName]]):Option[Req] =
     val rsps = comb.map(cas=> Rsp(cas,a)).filter(rsp => st.satisfies(a,rsp))
-    if rsps.isEmpty then RTrue else rsps.foldRight[Req](RFalse)(ROr(_,_))
+    if rsps.isEmpty then None/*RTrue*/ else Some(rsps.foldRight[Req](RFalse)(ROr(_,_)))
 
   protected def reachable():(Set[SysSt],Set[SysTrans]) =
     var visited:Set[SysSt] = initial

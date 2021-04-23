@@ -122,9 +122,9 @@ object Parser extends RegexParsers:
       leftFexp
 
   def leftFexp:Parser[FExp] =
-    feat |
       bottom |
       top |
+      feat |
       "!"~feat    ^^ {case _~f => FNot(f)} |
       "!"~par(fexp) ^^ {case _~f => FNot(f)} |
       par(fexp)

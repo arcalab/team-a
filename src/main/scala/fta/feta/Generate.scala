@@ -91,6 +91,7 @@ object Generate:
   private def mkRsp(enabled:Map[CAction,Set[CName]],q:SysSt)(using f:FETA):FReq =
     val comb = enabled.map(en=>en._1 -> en._2.subsets().toSet)
     val actReq = comb.map(c=>mkActRsp(c._1,c._2.filter(_.nonEmpty),q))
+      .collect({case Some(r)=> r})
     if actReq.isEmpty then FRTrue else actReq.foldRight[FReq](FRFalse)(FROr(_,_))
 
   /**
@@ -100,11 +101,10 @@ object Generate:
    * @param q state
    * @return
    */
-  private def mkActRsp(a:CAction, comb:Set[Set[CName]],q:SysSt)(using f:FETA):FReq =
+  private def mkActRsp(a:CAction, comb:Set[Set[CName]],q:SysSt)(using f:FETA):Option[FReq] =
     val rsps = comb.map(cas=> mkRsp(a,cas,q))
-      .filter(_.isDefined)
-      .map(_.get)
-    if rsps.isEmpty then FRTrue else rsps.foldRight[FReq](FRFalse)(FROr(_,_))
+      .collect({case Some(r) => r})
+    if rsps.isEmpty then None/*FRTrue*/ else Some(rsps.foldRight[FReq](FRFalse)(FROr(_,_)))
 
   private def mkRsp(a:CAction,participants:Set[CName],q:SysSt)(using f:FETA):Option[FRsp] =
     val req = FRsp(participants,a,feReq(participants,a,q))

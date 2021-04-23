@@ -53,9 +53,16 @@ object Interpret:
 
   def interpret(fstSpec:FSTSpec):InterpretFST[FSTs] = for {
     fs <- ReaderT.ask[ErrorOr,FSystem]
+    fst <- interpretFST(fstSpec)
+    nfst <- if FSTs.complete(fst,fs.communicating,fs.products) then ReaderT.pure[ErrorOr,FSystem,FSTs](fst) 
+      else ReaderT.liftF[ErrorOr,FSystem,FSTs](Either.left(s"Incomplete FST"))
+  } yield nfst
+
+  def interpretFST(fstSpec:FSTSpec):InterpretFST[FSTs] = for {
+    fs <- ReaderT.ask[ErrorOr,FSystem]
     fst <- interpretProdSepc(fstSpec.prodSpec)
     dom = fst.st.keySet
-    missing = fs.actions -- dom
+    missing = fs.communicating -- dom
     res <- if (fstSpec.defualt.isDefined) then
       mkDefault(missing,fstSpec.defualt.get,fst)
     else ReaderT.pure[ErrorOr,FSystem,FSTs](fst)
@@ -90,12 +97,7 @@ object Interpret:
 
   def mkDefaultProd(a:CAction, pst:PST,default:ST):InterpretFST[(CAction,PST)] = for {
     fs <- ReaderT.ask[ErrorOr,FSystem]
-    ps = pst.st.keySet
-    missing = fs.products -- ps
+    ps:Set[Product] = pst.products
+    fsps:Set[Product] = fs.products
+    missing = fsps -- ps
   } yield (a,PST(pst.st++missing.map(p=>p->default).toMap))
-
-
-
-
-
-

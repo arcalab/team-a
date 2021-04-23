@@ -4,7 +4,7 @@ import fta.eta.CA.CTrans
 import fta.eta.ST.SRange
 import fta.eta.{ETA, System}
 import fta.features.FExp
-import fta.features.FExp._
+import fta.features.FExp.{FNot, FTrue, Feat, Product}
 import fta.feta.FCA.FCTrans
 import fta.feta.{FETA, FSystem}
 import fta.view.{Dot, Mermaid}
@@ -65,8 +65,9 @@ object DSL:
     case Right(feta) => feta
   }
 
-  def interpretInServer(spec:Specification,products:Set[Product]):FETA =
+  def interpretInServer(spec:Specification,products:Set[Product]):FETA = {
     Interpret.interpretInServer(spec,products) match {
       case Left(err) => throw new RuntimeException("Interpretation failed: " + err)
       case Right(feta) => feta
     }
+  }
