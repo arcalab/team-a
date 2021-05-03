@@ -1,5 +1,6 @@
 package fta.feta
 
+import fta.eta.ETA
 import fta.eta.CA.CAction
 import fta.eta.System.{CName, SysLabel, SysSt}
 import fta.features.FExp
@@ -39,7 +40,10 @@ case class FETA(s: FSystem, fst: FSTs):
   def enabled(st:SysSt):Set[CAction] =
     s.enabledActs(st)
     
-  def fca(name:CName):FCA = s.components(name) 
+  def fca(name:CName):FCA = s.components(name)
+
+  def project(p:Product):ETA =
+    ETA(s.project(p),fst.project(p))
 
   //protected lazy val allTrans:Set[FSysTrans] = s.trans.filter(t=>
   //    if s.communicating.contains(t.by.action) then (st.satisfies(t)) else true)
@@ -163,6 +167,7 @@ case class FETA(s: FSystem, fst: FSTs):
 object FETA:
   //type ST = Map[CAction,SType]
 
+  def apply():FETA = FETA(FSystem(Nil,None,None),FSTs(Map()))
   //def apply(s:FSystem,fst:FSTs):FETA = FETA(s,fst,None,None)
 
   case class StFReq(rcp:FReq, rsp:FReq)

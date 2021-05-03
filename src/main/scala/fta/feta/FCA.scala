@@ -1,9 +1,11 @@
 package fta.feta
 
-import fta.eta.CA.{CAction, CState}
+import fta.eta.CA
+import fta.eta.CA.{CAction, CState, CTrans}
 import fta.features.FExp
-import fta.features.FExp.{FTrue, Feature}
+import fta.features.FExp.{FTrue, Feature, Product}
 import fta.feta.FCA.FCTrans
+import fta.backend.Simplify.caSimplify
 
 case class FCA(states:Set[CState]
               , labels:Set[CAction], inputs:Set[CAction], outputs:Set[CAction]
@@ -69,6 +71,11 @@ case class FCA(states:Set[CState]
   def enabledOut(st: CState,fs:Set[Feature]): Set[CAction] =
     enabledActs(st,fs).intersect(outputs)
 
+  def project(p:Product):CA = {
+    val valid = trans.filter(t=>t.fe.satisfiedBy(p))
+    val ntrans = valid.map(t=>CTrans(t.from,t.by,t.to))
+    CA(states,labels,inputs,outputs,ntrans,initial,name).simplify
+  }
 
 object FCA:
 

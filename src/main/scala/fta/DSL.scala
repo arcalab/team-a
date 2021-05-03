@@ -6,7 +6,7 @@ import fta.eta.{ETA, System}
 import fta.features.FExp
 import fta.features.FExp.{FNot, FTrue, Feat, Product}
 import fta.feta.FCA.FCTrans
-import fta.feta.{FETA, FSystem}
+import fta.feta.{FETA, FSystem, FCA}
 import fta.view.{Dot, Mermaid}
 
 import scala.language.implicitConversions
@@ -43,8 +43,10 @@ object DSL:
   def toMermaid(e:ETA):String = Mermaid(e)
  
   // mermaid graph for Featured System and Featured ETA
+  def toMermaid(f:FCA):String = Mermaid(f)
   def toMermaid(s:FSystem):String = Mermaid(s)
   def toMermaid(e:FETA):String = Mermaid(e)
+
 
   // cross product of a list of tuples
   def crossProduct[A](list:List[List[A]]):List[List[A]] = list match

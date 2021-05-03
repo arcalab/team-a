@@ -1,5 +1,7 @@
 package fta.backend
 
+import fta.eta.CA
+import fta.eta.CA.{CState,CTrans}
 import fta.eta.System.SysSt
 import fta.feta.FSystem.FSysTrans
 import fta.feta.FTS
@@ -51,6 +53,46 @@ object Simplify:
       var visited = v + st
       var transitions = nt
       for (t <- fts.trans.filter(_.from == st))
+        transitions += t
+        if (!(visited contains t.to)) then
+          visit(t.to,visited,transitions) match
+            case (ved,nes) => {visited = ved; transitions = nes}
+      (visited, transitions)
+
+  //todo: make CA/FCA to have an lts/fts? to reuse code
+  given caSimplify as Simplify[CA]:
+    extension (ca:CA) def simplify:CA =
+      val (ns,nt) = reachable(ca)
+      CA(ns,ca.labels,ca.inputs,ca.outputs,nt,ca.initial,ca.name)
+
+    /**
+     * Reachable set of states and transitions of an CA
+     * @param ca CA
+     * @return a set of reachable states and a set of reachable transitions
+     */
+    private def reachable(ca:CA):(Set[CState],Set[CTrans]) =
+      var visited:Set[CState] = ca.initial
+      var transitions:Set[CTrans] = Set()
+      for (t <- ca.trans.filter(t=>ca.initial.contains(t.from))) do
+        transitions += t
+        if (!(visited contains t.to)) then
+          visit(t.to,visited,transitions)(using ca) match
+            case (v,ne) => {visited = v + t.to; transitions = ne}
+      (visited,transitions)
+
+    /**
+     * Visit a state in an CA
+     * @param st state to visit
+     * @param v set of states already visited
+     * @param nt set of transitions already visited
+     * @param ca CA
+     * @return set of visited sates and transtions
+     */
+    private def visit(st:CState,v:Set[CState],nt:Set[CTrans])
+                     (using ca:CA):(Set[CState],Set[CTrans]) =
+      var visited = v + st
+      var transitions = nt
+      for (t <- ca.trans.filter(_.from == st))
         transitions += t
         if (!(visited contains t.to)) then
           visit(t.to,visited,transitions) match

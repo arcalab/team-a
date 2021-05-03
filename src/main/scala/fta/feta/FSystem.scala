@@ -2,6 +2,7 @@ package fta.feta
 
 import fta.eta.System.{CName, SysLabel, SysSt, crossProduct}
 import fta.eta.CA.{CAction, CState}
+import fta.eta.System
 import fta.feta.FCA
 import fta.feta.FCA._
 import fta.features.FExp
@@ -68,6 +69,8 @@ case class FSystem(components:List[FCA],userFm:Option[FExp],userProducts:Option[
   def localEnOut(st:SysSt):Map[CAction,Set[CName]] =
     localEn(st).map({case (a,cas) => (a,cas.intersect(outputDom(a)))})
 
+  def project(p:Product):System =
+    System(components.map(_.project(p)))
 
 object FSystem:
   

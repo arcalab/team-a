@@ -1,10 +1,10 @@
 package fta.feta
 
 import fta.eta.CA.CAction
-import fta.eta.ST
+import fta.eta.{ST, STs}
 import fta.feta.FReq
 import fta.feta.FReq._
-import fta.features.FExp.{Feature,Product}
+import fta.features.FExp.{Feature, Product}
 import fta.feta.FETA.StFReq
 import fta.feta.FSTs.{FeatureST, PST}
 import fta.feta.FSystem.FSysTrans
@@ -14,6 +14,7 @@ import fta.feta.FSystem.FSysTrans
  * Created by guillecledou on 05/03/2021
  * Featured Synchronisation Type fta.Specification
  * Maps an action to its synchronization type in each product (feature selection)
+ * todo: consider reorganising this as in the paper
  */
 case class FSTs(st:Map[CAction,PST]):
   
@@ -34,6 +35,11 @@ case class FSTs(st:Map[CAction,PST]):
 
   def satisfiedBy(req: FRsp):Set[Product] =
     st(req.act).satisfiedBy(req)
+
+  def project(p:Product):STs = {
+    val nst = st.map(fst=> fst._1->fst._2.st(p))
+    STs(nst)
+  }
 
 
 object FSTs:

@@ -7,7 +7,8 @@ import fta.eta.ETA.StReq
 import fta.eta.System
 import fta.eta.System.{SysLabel, SysSt, SysTrans}
 import fta.features.FExp
-import fta.feta.{FETA, FReq, FSystem, Generate}
+import fta.feta.{FETA, FReq, FSystem, Generate,FCA}
+import fta.feta.FCA.FCTrans
 import fta.feta.FReq._
 import fta.feta.FETA.StFReq
 import fta.feta.FSystem.FSysTrans
@@ -56,6 +57,17 @@ object Mermaid:
        | ${e.trans.map(t=>mkTrans(t,states,names)).mkString("\n")}
        |""".stripMargin
 
+  def apply(f:FCA):String = 
+    val states = f.states 
+    s"""
+       |stateDiagram-v2
+       | ${f.initial.map(i=> s"""[*] --> $i""").mkString("\n")}
+       | ${f.trans.map(t=>mkFCATrans(t)).mkString("\n")}
+       |""".stripMargin
+  
+  def mkFCATrans(t:FCTrans):String = 
+    s"""${t.from} --> ${t.to}: ${t.by}<br>${mkFExp(t.fe)}"""
+
   def mkLabel(l:SysLabel,names:Map[Int,String]):String =
     val senders   = l.senders.map(s=>names(s))
     val receivers = l.receivers.map(s=>names(s))
@@ -94,10 +106,14 @@ object Mermaid:
        |""".stripMargin
 
   def mkFState(st:SysSt,sid:Map[SysSt,Int],reqs:Map[SysSt,StFReq],names:Map[Int,String]): String =
+    // s""" ${sid(st)}: 
+    //    | (${st.states.mkString(",")})<br>
+    //    | ${freqMermaid(reqs(st).rcp)(using names)}<br/>
+    //    | ${freqMermaid(reqs(st).rsp)(using names)}
+    //    |""".stripMargin.replace("\n","")
     s""" ${sid(st)}: 
        | (${st.states.mkString(",")})<br>
-       | ${freqMermaid(reqs(st).rcp)(using names)}<br/>
-       | ${freqMermaid(reqs(st).rsp)(using names)}
+       | ${freqMermaid(reqs(st).rcp)(using names)}
        |""".stripMargin.replace("\n","")
 
   def mkFTrans(t:FSysTrans, sid:Map[SysSt,Int],names:Map[Int,String]):String =

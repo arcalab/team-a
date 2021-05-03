@@ -41,6 +41,7 @@ object CA:
   type CAction = String
   
   val newCA:CA = CA(Set(), Set(), Set(), Set(), Set(), Set(),"")
-  
+
+  // todo: define it as a SysTrans for reusability, paramitrised on the label?
   case class CTrans(from:CState, by:CAction, to:CState):
     def by(a:CAction) = CTrans(from,a,to)
