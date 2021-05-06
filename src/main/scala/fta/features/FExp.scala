@@ -13,13 +13,14 @@ sealed trait FExp :
     case FNot(e)      => e.feats
     case FImp(e1, e2) => e1.feats ++ e2.feats
     case FEq(e1, e2)  => e1.feats ++ e2.feats
+    case FXor(e1,e2)  => e1.feats ++ e2.feats
   }
 
   def &&(other:FExp):FExp   = FAnd(this,other)
   def ||(other:FExp):FExp   = FOr(this,other)
   def -->(other:FExp):FExp  = FImp(this,other)
   def <->(other:FExp):FExp  = FEq(this,other)
-  def xor(other:FExp):FExp  = (this || other) && FNot(this && other)
+  def xor(other:FExp):FExp  = FXor(this,other)//(this || other) && FNot(this && other)
 
   /**
    * Checks if a given instantiation of features satisfies the feature expression
@@ -35,6 +36,7 @@ sealed trait FExp :
     // removing syntactic sugar
     case FImp(e1, e2) => (FNot(e1)||e2).check(sol)
     case FEq(e1, e2)  => ((e1-->e2)&&(e2-->e1)).check(sol)
+    case FXor(e1,e2)  => ((e1 && FNot(e2)) || (e2 && FNot(e1))).check(sol)
   }
 
   def satisfiedBy(featureSelection:Set[Feature]): Boolean =
@@ -73,35 +75,49 @@ sealed trait FExp :
     case FNot(e) => FNot(e.removeSS)
     case FImp(e1,e2) => FOr(FNot(e1.removeSS), e2.removeSS)
     case FEq(e1,e2) => FAnd(FImp(e1,e2).removeSS,FImp(e2,e1).removeSS)
+    case FXor(e1,e2) =>
+      val (se1,se2) = (e1.removeSS,e2.removeSS)
+      FOr(FAnd(se1,FNot(se2)),FAnd(se2,FNot(se1)))
   
   protected def simplifyOnce:FExp = this match
-    case FNot(FNot(f)) => f
+    case FNot(FNot(f)) => f.simplifyOnce
+    case FNot(f) => FNot(f.simplifyOnce)
     case FAnd(FNot(FTrue),_) => FNot(FTrue)
     case FAnd(_,FNot(FTrue)) => FNot(FTrue)
     case FAnd(FTrue,FTrue) => FTrue
     case FAnd(FTrue,r2) => r2.simplifyOnce
     case FAnd(r1,FTrue) => r1.simplifyOnce
-    case FAnd(r1,r2) if r1 expensiveEqual r2 => r1.simplifyOnce
+    case FAnd(r1,r2) if r1 similar r2 => r1.simplifyOnce
     case FAnd(r1,r2) => FAnd(r1.simplifyOnce,r2.simplifyOnce)
     case FOr(FTrue,_) => FTrue
     case FOr(_,FTrue) => FTrue
     case FOr(FNot(FTrue),r1) => r1.simplifyOnce
     case FOr(r1,FNot(FTrue)) => r1.simplifyOnce
-    case FOr(r1,r2) if r1 expensiveEqual  r2 => r1.simplifyOnce
+    case FOr(r1,r2) if r1 similar  r2 => r1.simplifyOnce
+    case FOr(FAnd(r1,FNot(r2)),FAnd(r3,FNot(r4))) if (r1 similar r4) && (r2 similar r3) =>
+      FXor(r1.simplifyOnce,r2.simplifyOnce)
     case FOr(r1,r2) => FOr(r1.simplifyOnce,r2.simplifyOnce)
+    case FXor(r1,r2) if r1 similar r2 => r1.simplifyOnce
+    case FXor(r1,r2) => FXor(r1.simplifyOnce,r2.simplifyOnce)
     case FEq(FTrue, e) => e.simplifyOnce
     case FEq(e3, FTrue) => e3.simplifyOnce
     case FEq(FNot(FTrue), e3) => FNot(e3.simplifyOnce)
     case FEq(e3, FNot(FTrue)) => FNot(e3.simplifyOnce)
-    case FEq(e3, e4) => if e3 expensiveEqual  e4 then FTrue else FEq(e3.simplifyOnce, e4.simplifyOnce)
+    case FEq(e3, e4) => if e3 similar  e4 then FTrue else FEq(e3.simplifyOnce, e4.simplifyOnce)
     case FImp(FNot(FTrue), _) => FTrue 
     case FImp(_, FTrue) => FTrue
     case FImp(e3, e4) => FImp(e3.simplifyOnce, e4.simplifyOnce)
     case _ => this
-  
-  def expensiveEqual(other:FExp):Boolean = this == other
-    //this.products(this.feats) == other.products(other.feats)
-    
+
+  protected def similar(f:FExp):Boolean = (this,f) match
+    case (a,b)                  if a == b => true
+    case (FOr(a,b),FOr(c,d))    if a==d && b == c => true
+    case (FAnd(a,b),FAnd(c,d))  if a==d && b == c => true
+    case (FEq(a,b),FEq(c,d))    if a==d && b == c => true
+    case (FXor(a,b),FXor(c,d))  if a==d && b == c => true
+    case _ => false
+
+
   // override def toString:String = this.show 
 
 object FExp:
@@ -116,11 +132,15 @@ object FExp:
   // to simplify notation
   case class FImp(e1:FExp,e2:FExp) extends FExp
   case class FEq(e1:FExp,e2:FExp)  extends FExp
+  case class FXor(e1:FExp,e2:FExp)  extends FExp
 
-  def fe(featureSelections:Set[Product],feats:Set[Feature]):FExp = 
-    lor(featureSelections.map(p=>
-      land(p.map(Feat(_))) && FNot(lor((feats--p).map(Feat(_))))))
-  
+  def feProds(featureSelections:Set[Product], feats:Set[Feature]):FExp =
+    lor(featureSelections.map(p=> fe(p,feats)))
+      //land(p.map(Feat(_))) && FNot(lor((feats--p).map(Feat(_))))))
+
+  def fe(p:Product,feats:Set[Feature]):FExp =
+    land(p.map(Feat)) && FNot(lor((feats--p).map(Feat)))
+
   def lor(fes:Set[FExp]):FExp =
     fes.foldRight[FExp](FNot(FTrue))(_||_)
 

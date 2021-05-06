@@ -4,7 +4,7 @@ import fta.eta.ETA
 import fta.eta.CA.CAction
 import fta.eta.System.{CName, SysLabel, SysSt}
 import fta.features.FExp
-import fta.features.FExp.{FNot, FTrue, Feature, Product, fe, land, lor}
+import fta.features.FExp.{FNot, FTrue, Feature, Product, feProds, land, lor}
 import fta.feta.FETA.StFReq
 import fta.feta.FReq._
 import fta.feta.FSystem.FSysTrans
