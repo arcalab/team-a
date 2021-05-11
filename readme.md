@@ -5,6 +5,6 @@ which are systems of reactive components that communicate according
 to specified synchronisation types.
 
 This repository provides a prototype tool to specify and analysis FETA. 
-Currently, it is possible to try the tool online at [http://arcatools.org/feta]()
+Currently, it is possible to try the tool online at [http://arcatools.org/feta](http://arcatools.org/feta)
 
 
