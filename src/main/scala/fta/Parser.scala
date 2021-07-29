@@ -57,7 +57,7 @@ object Parser extends RegexParsers:
   //   }
 
   def fsts:Parser[FSTSpec] =
-    "FST"~"="~>block(fst) ^^ {case f => f}
+    "FSTS"~"="~>block(fst) ^^ {case f => f}
     
   // def fst:Parser[(CAction,PST)] =
   //   "default"~"="~st ^^ {case _~_~st => ("__default__",PST( st)} |

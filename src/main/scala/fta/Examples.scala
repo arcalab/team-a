@@ -203,7 +203,7 @@ object Examples:
        |
        |FM = s xor o
        |
-       |FST = {
+       |FSTS = {
        | default = one to one
        | {o}:join,leave = many to one
        |}
