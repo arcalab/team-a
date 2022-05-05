@@ -25,6 +25,7 @@ object Mermaid:
   def apply(s:FSystem):String =
     val states = s.states.zipWithIndex.toMap
     val names = s.components.zipWithIndex.map(c => c._2 -> c._1.name).toMap
+    implicit val showVariability = s.features.nonEmpty
     s"""
        |stateDiagram-v2
        | ${s.initial.map(i=> s"""[*] --> ${states(i)}""").mkString("\n")}
@@ -58,15 +59,16 @@ object Mermaid:
        |""".stripMargin
 
   def apply(f:FCA):String = 
-    val states = f.states 
+    val states = f.states
+    implicit val showVariability = f.features.nonEmpty
     s"""
        |stateDiagram-v2
        | ${f.initial.map(i=> s"""[*] --> $i""").mkString("\n")}
        | ${f.trans.map(t=>mkFCATrans(t)).mkString("\n")}
        |""".stripMargin
   
-  def mkFCATrans(t:FCTrans):String = 
-    s"""${t.from} --> ${t.to}: ${t.by}<br>${mkFExp(t.fe)}"""
+  def mkFCATrans(t:FCTrans)(implicit showVariability:Boolean):String =
+    s"""${t.from} --> ${t.to}: ${t.by}""" ++ (if showVariability then s"""<br>${mkFExp(t.fe)}""" else "")
 
   def mkLabel(l:SysLabel,names:Map[Int,String]):String =
     val senders   = l.senders.map(s=>names(s))
@@ -98,6 +100,7 @@ object Mermaid:
     val states = e.states.zipWithIndex.toMap
     val names = e.s.components.zipWithIndex.map(c => c._2 -> c._1.name).toMap
     val reqs = Generate.freq(e) //e.requirements()
+    implicit val showVariability = e.features.nonEmpty
     s"""
        |stateDiagram-v2
        | ${e.initial.map(i=> s"""[*] --> ${states(i)}""").mkString("\n")}
@@ -105,7 +108,8 @@ object Mermaid:
        | ${e.trans.map(t=>mkFTrans(t,states,names)).mkString("\n")}
        |""".stripMargin
 
-  def mkFState(st:SysSt,sid:Map[SysSt,Int],reqs:Map[SysSt,StFReq],names:Map[Int,String]): String =
+  def mkFState(st:SysSt,sid:Map[SysSt,Int],reqs:Map[SysSt,StFReq],names:Map[Int,String])(
+    implicit showVariability:Boolean): String =
     // s""" ${sid(st)}: 
     //    | (${st.states.mkString(",")})<br>
     //    | ${freqMermaid(reqs(st).rcp)(using names)}<br/>
@@ -116,20 +120,22 @@ object Mermaid:
        | ${freqMermaid(reqs(st).rcp)(using names)}
        |""".stripMargin.replace("\n","")
 
-  def mkFTrans(t:FSysTrans, sid:Map[SysSt,Int],names:Map[Int,String]):String =
-    s"""${sid(t.from)} --> ${sid(t.to)}: ${mkLabel(t.by,names)}<br>${mkFExp(t.fe)}"""
+  def mkFTrans(t:FSysTrans, sid:Map[SysSt,Int],names:Map[Int,String])(implicit showVariability:Boolean):String =
+    s"""${sid(t.from)} --> ${sid(t.to)}: ${mkLabel(t.by,names)}""" ++ (if showVariability then "<br>"++mkFExp(t.fe) else "")
 
   def mkFExp(fe:FExp):String = 
     color(fe.show,"purple")
   
  
-  def freqMermaid(req:FReq)(using names:Map[Int,String]):String = req.simplify match
+  def freqMermaid(req:FReq)(using names:Map[Int,String])(implicit showVariability:Boolean):String = req.simplify match
     case FRTrue => ""
     case FRFalse => "false"
+    // todo: FRSp needs to be updated
     case FRsp(s,a,fe) => color(s"""rsp(${mkCNames(s.map(names(_)))},${mkAct(a)},${mkFExp(fe)})""","green")
     case FRcp(s,a,fe) =>
       //color(s"""rcp(${mkCNames(s.map(names(_)))},${mkAct(a)},${mkFExp(fe)})""","blue")
-      s"""[${mkFExp(fe)}] (${mkCNames(s.map(names(_)))},${mkAct(a)})"""
+      (if showVariability then s"""[${mkFExp(fe)}] """ else "") ++
+        s"""(${mkCNames(s.map(names(_)))},${mkAct(a)})"""
     case FRAnd(r1,r2) => freqMermaid(r1) + " #8743;<br> " + freqMermaid(r2)
     case FROr(r1,r2) => freqMermaid(r1) + " #8897; " + freqMermaid(r2)
     
