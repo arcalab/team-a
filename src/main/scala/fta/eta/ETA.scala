@@ -34,7 +34,7 @@ case class ETA(s:System,st:STs):
     req
 
   def inputOnlyEn(gs:SysSt, cas:Set[CName]):Boolean =
-    cas.forall(ca=> s.components(ca).enabledOut(gs.states(ca)).isEmpty)
+    cas.forall(ca=> s.getCA(ca).enabledOut(gs.states(s.indexOf(ca))).isEmpty)
 
   def enabled(st:SysSt):Set[CAction] =
     s.enabled(st)

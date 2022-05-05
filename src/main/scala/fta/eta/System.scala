@@ -37,20 +37,25 @@ case class System(components:List[CA]):
     inputs intersect outputs
   
   def inputDom(a:CAction):Set[CName] =
-    components.zipWithIndex.collect{ case (ca, i) if ca.inputs.contains(a) => i }.toSet
+    components.collect{ case ca if ca.inputs.contains(a) => ca.name }.toSet
+    //components.zipWithIndex.collect{ case (ca, i) if ca.inputs.contains(a) => i }.toSet
 
   def outputDom(a:CAction):Set[CName] =
-    components.zipWithIndex.collect{ case (ca, i) if ca.outputs.contains(a) => i }.toSet
+    components.collect{ case ca if ca.outputs.contains(a) => ca.name }.toSet
+    //components.zipWithIndex.collect{ case (ca, i) if ca.outputs.contains(a) => i }.toSet
 
   def enabled(st:SysSt):Set[CAction] =
     trans.collect({case t if t.from==st => t.by.action})
 
   def localEn(st:SysSt):Map[CAction,Set[CName]] =
     var enabled:Map[CAction,Set[CName]] = Map()
-    for  ((ls,ca)<- st.states.zipWithIndex) do
-      for (a<- components(ca).enabled(ls)) do
+    for  ((ls,ca)<- st.states.zip(components.map(_.name))) do
+      for (a<- getCA(ca).enabled(ls)) do
         enabled = enabled.updated(a,enabled.getOrElse(a,Set())+ca)
     enabled
+
+  def getCA(name:CName):CA =
+    components.find(c=> c.name == name).get
 
   def localEnIn(st:SysSt):Map[CAction,Set[CName]] =
     localEn(st).map({case (a,cas) => (a,cas.intersect(inputDom(a)))})
@@ -58,9 +63,11 @@ case class System(components:List[CA]):
   def localEnOut(st:SysSt):Map[CAction,Set[CName]] =
     localEn(st).map({case (a,cas) => (a,cas.intersect(outputDom(a)))})
 
+  def indexOf(name:String):Int = components.indexWhere(c=>c.name == name)
+
 object System:
 
-  type CName = Int
+  type CName = String
 
   case class SysLabel(senders:Set[CName], action:CAction, receivers:Set[CName]):
     override def toString: String =
@@ -77,22 +84,23 @@ object System:
     case Nil => Set()
     case c::Nil => liftTrans(c)
     case c::cs =>
-      val csi = cs.zip(LazyList.from(1))
+//      val csi = cs.zip(LazyList.from(1))
       val fst = liftTrans(c)
-      csi.foldLeft(fst)({case (ts,(a,i)) =>compSysCa(ts,a,i)})
+      cs.foldLeft(fst)({case (ts,a) =>compSysCa(ts,a,a.name)})
+//      csi.foldLeft(fst)({case (ts,(a,i)) =>compSysCa(ts,a,i)})
 
   protected def liftTrans(c:CA):Set[SysTrans] =
     for t <- c.trans
-      yield SysTrans(SysSt(List(t.from)),mkLbl(t.by,c,0),SysSt(List(t.to)))
+      yield SysTrans(SysSt(List(t.from)),mkLbl(t.by,c,c.name),SysSt(List(t.to)))
 
   protected def compSysCa(strans:Set[SysTrans], c:CA, cn:CName):Set[SysTrans] =
     var ts:Set[SysTrans]= Set()
     // joined
     for st<-strans;t<-c.trans; if (st.by.action == t.by) do
-      ts+=SysTrans(mkSt(st.from,t.from),mkJoinLbl(st.by,c,cn),mkSt(st.to,t.to))
+      ts+=SysTrans(mkSt(st.from,t.from),mkJoinLbl(st.by,c,c.name),mkSt(st.to,t.to))
     // only left
     for loc<-strans.flatMap(t=>Set(t.from,t.to)); t<-c.trans do
-      ts+=SysTrans(mkSt(loc,t.from),mkLbl(t.by,c,cn),mkSt(loc,t.to))
+      ts+=SysTrans(mkSt(loc,t.from),mkLbl(t.by,c,c.name),mkSt(loc,t.to))
     // only right
     for loc<-c.states; st<-strans do
       ts+=SysTrans(mkSt(st.from,loc),st.by,mkSt(st.to,loc))
@@ -101,13 +109,13 @@ object System:
   // todo: fix cname to be directly c.name
   protected def mkJoinLbl(slbl:SysLabel, c:CA, cn:CName):SysLabel =
     if c.inputs.contains(slbl.action)
-    then SysLabel(slbl.senders,slbl.action,slbl.receivers+cn)
-    else SysLabel(slbl.senders+cn,slbl.action,slbl.receivers)
+    then SysLabel(slbl.senders,slbl.action,slbl.receivers+c.name)
+    else SysLabel(slbl.senders+c.name,slbl.action,slbl.receivers)
 
   protected def mkLbl(a:CAction, c:CA, cn:CName):SysLabel =
     if c.inputs.contains(a)
-    then SysLabel(Set(),a,Set(cn))
-    else SysLabel(Set(cn),a,Set())
+    then SysLabel(Set(),a,Set(c.name))
+    else SysLabel(Set(c.name),a,Set())
 
   protected def mkSt(st:SysSt, s:CState):SysSt = SysSt(st.states.appended(s))
 

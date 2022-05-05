@@ -142,7 +142,7 @@ object Generate:
   private def feReq(participants:Set[CName], a:CAction, q:SysSt)(using f:FETA):FExp =
     var fe:Set[FExp] = Set()
     for (i <- participants)
-      val fei = f.fca(i).enabledTrans(q.states(i),a).map(t=>t.fe)
+      val fei = f.fca(i).enabledTrans(q.states(f.indexOf(i)),a).map(t=>t.fe)
       fe += lor(fei)
     land(fe)
 

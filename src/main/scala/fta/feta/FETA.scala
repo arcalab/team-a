@@ -35,15 +35,17 @@ case class FETA(s: FSystem, fst: FSTs):
   //  req
 
   def inputOnlyEn(gs:SysSt, cas:Set[CName],p:Set[Feature]):Boolean =
-    cas.forall(ca=> fca(ca).enabledOut(gs.states(ca),p).isEmpty)
+    cas.forall(ca=> fca(ca).enabledOut(gs.states(s.indexOf(ca)),p).isEmpty)
   
   def enabled(st:SysSt):Set[CAction] =
     s.enabledActs(st)
     
-  def fca(name:CName):FCA = s.components(name)
+  def fca(name:CName):FCA = s.components.find(c=>c.name==name).get
 
   def project(p:Product):ETA =
     ETA(s.project(p),fst.project(p))
+
+  def indexOf(name:String):Int = s.components.indexWhere(c=>c.name==name)
 
   //protected lazy val allTrans:Set[FSysTrans] = s.trans.filter(t=>
   //    if s.communicating.contains(t.by.action) then (st.satisfies(t)) else true)

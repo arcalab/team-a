@@ -42,10 +42,12 @@ case class FSystem(components:List[FCA],userFm:Option[FExp],userProducts:Option[
   lazy val products:Set[Product] = userProducts.getOrElse(Set(Set())) //fm.products(features))
 
   def inputDom(a:CAction):Set[CName] =
-    components.zipWithIndex.collect{ case (ca, i) if ca.inputs.contains(a) => i }.toSet
+    components.collect{ case ca if ca.inputs.contains(a) => ca.name }.toSet
+  //components.zipWithIndex.collect{ case (ca, i) if ca.inputs.contains(a) => i }.toSet
 
   def outputDom(a:CAction):Set[CName] =
-    components.zipWithIndex.collect{ case (ca, i) if ca.outputs.contains(a) => i }.toSet
+    components.collect{ case ca if ca.outputs.contains(a) => ca.name }.toSet
+  //components.zipWithIndex.collect{ case (ca, i) if ca.outputs.contains(a) => i }.toSet
 
   def enabledTrans(st:SysSt):Set[FSysTrans] =
     trans.collect({case t if t.from == st => t})
@@ -58,10 +60,13 @@ case class FSystem(components:List[FCA],userFm:Option[FExp],userProducts:Option[
 
   def localEn(st:SysSt):Map[CAction,Set[CName]] =
     var enabled:Map[CAction,Set[CName]] = Map()
-    for  ((ls,ca)<- st.states.zipWithIndex) do
-      for (a<- components(ca).enabledActs(ls)) do
+    for  ((ls,ca)<- st.states.zip(components.map(_.name))) do
+      for (a<- getFCA(ca).enabledActs(ls)) do
         enabled = enabled.updated(a,enabled.getOrElse(a,Set())+ca)
     enabled
+
+  def getFCA(name:CName):FCA =
+    components.find(c=> c.name == name).get
 
   def localEnIn(st:SysSt):Map[CAction,Set[CName]] =
     localEn(st).map({case (a,cas) => (a,cas.intersect(inputDom(a)))})
@@ -72,6 +77,8 @@ case class FSystem(components:List[FCA],userFm:Option[FExp],userProducts:Option[
   def project(p:Product):System =
     System(components.map(_.project(p)))
 
+  def indexOf(name:String):Int = components.indexWhere(c=> c.name==name)
+
 object FSystem:
   
   case class FSysTrans(from:SysSt, by:SysLabel, fe:FExp, to:SysSt)
@@ -80,13 +87,14 @@ object FSystem:
     case Nil => Set()
     case c::Nil => liftTrans(c)
     case c::cs =>
-      val csi = cs.zip(LazyList.from(1))
+//      val csi = cs.zip(LazyList.from(1))
       val fst = liftTrans(c)
-      csi.foldLeft(fst)({case (ts,(a,i)) =>compFSysFCa(ts,a,i)})
+//      csi.foldLeft(fst)({case (ts,(a,i)) =>compFSysFCa(ts,a,i)})
+      cs.foldLeft(fst)({case (ts,a) =>compFSysFCa(ts,a,a.name)})
 
   protected def liftTrans(c:FCA):Set[FSysTrans] =
     for t <- c.trans
-      yield FSysTrans(SysSt(List(t.from)),mkLbl(t.by,c,0),t.fe,SysSt(List(t.to)))
+      yield FSysTrans(SysSt(List(t.from)),mkLbl(t.by,c,c.name),t.fe,SysSt(List(t.to)))
 
   protected def compFSysFCa(strans:Set[FSysTrans], c:FCA, cn:CName):Set[FSysTrans] =
     var ts:Set[FSysTrans]= Set()
