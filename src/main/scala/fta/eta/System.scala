@@ -62,7 +62,9 @@ object System:
 
   type CName = Int
 
-  case class SysLabel(senders:Set[CName], action:CAction, receivers:Set[CName])
+  case class SysLabel(senders:Set[CName], action:CAction, receivers:Set[CName]):
+    override def toString: String =
+      "(" ++ senders.mkString("{",",","}") ++ "," ++ action ++ "," ++ receivers.mkString("{",",","}") ++ ")"
   case class SysSt(states:List[CState])
   case class SysTrans(from:SysSt, by:SysLabel, to:SysSt) 
 
