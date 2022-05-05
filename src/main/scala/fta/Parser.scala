@@ -39,15 +39,15 @@ object Parser extends RegexParsers:
   def block[A](parser: Parser[A]): Parser[A] = "{" ~> parser <~ "}"
 
   def spec:Parser[Specification] =
-    rep(fca)~fsys~fm~fsts ^^ {case fcas~fsys~fm~fst=>Specification(fcas.toSet,fsys,fm,fst)}
+    rep(fca)~fsys~opt(fm)~fsts ^^ {case fcas~fsys~fm~fst=>Specification(fcas.toSet,fsys,fm.getOrElse(FTrue),fst)}
 
   def fca:Parser[FCA] =
-    "FCA"~lowerCaseId~par(actions)~par(actions)~"="~block(fcaBody) ^^ {
+    ("FCA"|"CA")~lowerCaseId~par(actions)~par(actions)~"="~block(fcaBody) ^^ {
       case _~name~ins~outs~_~f => f pub outs.toSet get ins.toSet named name
     }
 
   def fsys:Parser[Map[String,String]] =
-    "FS"~"="~par(rep1sep(lowerCaseId~"->"~lowerCaseId,",")) ^^ {
+    ("FS"|"S")~"="~par(rep1sep(lowerCaseId~":"~lowerCaseId,",")) ^^ {
       case _~_~fcas => fcas.map({case n~_~dfname => (n,dfname)}).toMap
     }
 
@@ -57,7 +57,7 @@ object Parser extends RegexParsers:
   //   }
 
   def fsts:Parser[FSTSpec] =
-    "FSTS"~"="~>block(fst) ^^ {case f => f}
+    ("FSTS"|"STS")~"="~>block(fst) ^^ {case f => f}
     
   // def fst:Parser[(CAction,PST)] =
   //   "default"~"="~st ^^ {case _~_~st => ("__default__",PST( st)} |
@@ -70,7 +70,8 @@ object Parser extends RegexParsers:
     "default"~"="~st ^^ {case _~_~st => st}
 
   def prodSpec:Parser[ProdSpec] =
-    product~":"~actionSpec~"="~st ^^ {case p~_~a~_~st => ProdSpec(a,p,st)}
+    product~":"~actionSpec~"="~st ^^ {case p~_~a~_~st => ProdSpec(a,p,st)} |
+    actionSpec~"="~st ^^ {case a~_~st => ProdSpec(a,Set(),st)} // if no product specified, assume the empty product
 
   def actionSpec:Parser[ActionSpec] = 
     default ^^ {_ => DefaultAct} | actions ^^ {case a => LAction(a)}
@@ -82,6 +83,12 @@ object Parser extends RegexParsers:
     srange~"to"~srange ^^ {case f~_~t => ST(f,t)}
 
   def srange:Parser[SRange] =
+    singlerange~"U"~srange ^^ {case r1~_~r2 => URange(r1,r2)} |
+      singlerange
+//    num~".."~maxrange ^^ {case f~_~m => range2SRange(f to m) } |
+//    "one" ^^ {_ => one} | "many" ^^ {_ => many} | "any" ^^ {_ => any}
+
+  def singlerange:Parser[SRange] =
     num~".."~maxrange ^^ {case f~_~m => range2SRange(f to m) } |
     "one" ^^ {_ => one} | "many" ^^ {_ => many} | "any" ^^ {_ => any}
 

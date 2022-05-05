@@ -1,7 +1,7 @@
 package fta
 
 import fta.eta.CA.CTrans
-import fta.eta.ST.SRange
+import fta.eta.ST.{SRange, SingleRange}
 import fta.eta.{ETA, System}
 import fta.features.FExp
 import fta.features.FExp.{FNot, FTrue, Feat, Product}
@@ -25,10 +25,10 @@ object DSL:
   implicit def int2FCALoc(i:Int):FCALoc = new FCALoc(i)
   
   implicit def range2SRange(r:Range): SRange =
-    SRange(r.start, if r.end<0 then None
+    SingleRange(r.start, if r.end<0 then None
       else if r.isInclusive then Some(r.end) else Some(r.end-1))
   
-  def from(i:Int):SRange = SRange(i,None)
+  def from(i:Int):SRange = SingleRange(i,None)
   val inf:Int = -1
 
   implicit def toFeat(s:String): Feat = Feat(s)
