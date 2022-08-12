@@ -33,7 +33,8 @@ object Dot:
   s"""${states(t.from)} -> ${states(t.to)} [label="${mkLbl(t.by/*,names*/)}"]"""
 
   protected def mkLbl(l:SysLabel/*,names:Map[Int,String]*/):String =
-    s"""(${l.senders/*.map(names)*/.mkString(",")}), ${l.action}, (${l.receivers/*.map(names)*/.mkString(",")})""".stripMargin
+    l.toString.stripMargin
+//    s"""(${l.senders/*.map(names)*/.mkString(",")}), ${l.action}, (${l.receivers/*.map(names)*/.mkString(",")})""".stripMargin
 
   def apply(e:ETA):String =
     val states = e.states.zipWithIndex.toMap//e.s.states.zipWithIndex.toMap

@@ -69,16 +69,23 @@ object System:
 
   type CName = String
 
-  case class SysLabel(senders:Set[CName], action:CAction, receivers:Set[CName]):
+  sealed trait SysLabel(val action: CAction):
+    def copy: SysLabel = this match
+      case l:SysLabelComm => l.copy
+      case l:SysLabelTau => l.copy
+  case class SysLabelComm(senders:Set[CName], override val action:CAction, receivers:Set[CName]) extends SysLabel(action):
     override def toString: String =
       "(" ++ senders.mkString("{",",","}") ++ "," ++ action ++ "," ++ receivers.mkString("{",",","}") ++ ")"
+
+  case class SysLabelTau(comp: CName, override val action: CAction) extends SysLabel(action) :
+    override def toString: String = s"($action @ $comp)"
   case class SysSt(states:List[CState])
   case class SysTrans(from:SysSt, by:SysLabel, to:SysSt) 
 
   def crossProduct[A](list:List[List[A]]):List[List[A]] = list match
     case Nil => List()
     case l::Nil => l.map(List(_))
-    case l::ls => for e <- l ; cp <- crossProduct(ls) yield List(e) ++ cp
+    case l::ls => for e <- l ; cp <- crossProduct(ls) yield e :: cp
 
   def transitions(components:List[CA]):Set[SysTrans] = components match
     case Nil => Set()
@@ -95,9 +102,14 @@ object System:
 
   protected def compSysCa(strans:Set[SysTrans], c:CA, cn:CName):Set[SysTrans] =
     var ts:Set[SysTrans]= Set()
-    // joined
-    for st<-strans;t<-c.trans; if (st.by.action == t.by) do
-      ts+=SysTrans(mkSt(st.from,t.from),mkJoinLbl(st.by,c,c.name),mkSt(st.to,t.to))
+    // joined (if both are communicating actions)
+    for SysTrans(from, by@SysLabelComm(_, a, _), to) <- strans
+        t <- c.trans
+        if (a == t.by) && (c.inputs.contains(a) || c.outputs.contains(a)) do
+      ts += SysTrans(mkSt(from, t.from), mkJoinLbl(by, c, cn), mkSt(to, t.to))
+//    // joined
+//    for st<-strans;t<-c.trans; if (st.by.action == t.by) do
+//      ts+=SysTrans(mkSt(st.from,t.from),mkJoinLbl(st.by,c,c.name),mkSt(st.to,t.to))
     // only left
     for loc<-strans.flatMap(t=>Set(t.from,t.to)); t<-c.trans do
       ts+=SysTrans(mkSt(loc,t.from),mkLbl(t.by,c,c.name),mkSt(loc,t.to))
@@ -107,15 +119,15 @@ object System:
     ts
 
   // todo: fix cname to be directly c.name
-  protected def mkJoinLbl(slbl:SysLabel, c:CA, cn:CName):SysLabel =
+  protected def mkJoinLbl(slbl:SysLabelComm, c:CA, cn:CName):SysLabelComm =
     if c.inputs.contains(slbl.action)
-    then SysLabel(slbl.senders,slbl.action,slbl.receivers+c.name)
-    else SysLabel(slbl.senders+c.name,slbl.action,slbl.receivers)
+    then SysLabelComm(slbl.senders,slbl.action,slbl.receivers+c.name)
+    else SysLabelComm(slbl.senders+c.name,slbl.action,slbl.receivers)
 
   protected def mkLbl(a:CAction, c:CA, cn:CName):SysLabel =
-    if c.inputs.contains(a)
-    then SysLabel(Set(),a,Set(c.name))
-    else SysLabel(Set(c.name),a,Set())
+    if c.inputs.contains(a)  then SysLabelComm(Set(),a,Set(c.name)) else
+    if c.outputs.contains(a) then SysLabelComm(Set(c.name),a,Set()) else
+      SysLabelTau(cn,a)
 
   protected def mkSt(st:SysSt, s:CState):SysSt = SysSt(st.states.appended(s))
 

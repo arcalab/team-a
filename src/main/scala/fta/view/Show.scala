@@ -1,6 +1,6 @@
 package fta.view
 
-import fta.eta.System.SysLabel
+import fta.eta.System.{SysLabel,SysLabelComm,SysLabelTau}
 import fta.eta.CA.CAction
 import fta.eta.Req
 import fta.eta.Req._
@@ -30,8 +30,11 @@ object Show:
     }
 
   given showLabel as Show[SysLabel]: 
-    extension (a:SysLabel) def show:String =
-      s"""{${a.senders.mkString(",")}, ${a.action},{${a.receivers.mkString(",")}"""
+    extension (a:SysLabel) def show:String = a match
+      case SysLabelComm(senders, action, receivers) =>
+        s"""{${senders.mkString(",")}} $action {${receivers.mkString(",")}}"""
+      case SysLabelTau(comp, action) =>
+        s"""$action @ $comp"""
 
   given showFExp as Show[FExp]:
     extension (fe:FExp) def show:String = showFE(fe)
@@ -49,7 +52,7 @@ object Show:
       case FEq(e1, e2) => parShow(e1)+"<->"+parShow(e2)
       case FXor(e1, e2) => parShow(e1)+" ⊕ "+parShow(e2)
 
-    
-    private def parShow(fExp: FExp): String = fExp match 
+
+    private def parShow(fExp: FExp): String = fExp match
       case FTrue | Feat(_) | FNot(_) => showFE(fExp)
       case _ => "("+showFE(fExp)+")"

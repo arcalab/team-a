@@ -34,6 +34,17 @@ case class FETA(s: FSystem, fst: FSTs):
   //    req += (gs -> StFReq(mkRcp(comOut,gs),mkRsp(comIn,gs)))
   //  req
 
+  /** Collects all actions: internal actions and communicating actions,
+    * mapped to the set of components where they occur */
+  def actionComps: (Set[(CAction,String)], Map[CAction,Set[String]]) =
+    var internals = Set[(CAction,String)]()
+    var comms = Map[CAction,Set[String]]()
+    for fca <- s.components; lb<-(fca.inputs++fca.outputs) do
+      comms += lb -> (comms.getOrElse(lb,Set())+fca.name)
+    for fca <- s.components; lb<-((fca.labels--fca.inputs)--fca.outputs) do
+      internals += lb -> fca.name
+    (internals, comms)
+
   def inputOnlyEn(gs:SysSt, cas:Set[CName],p:Set[Feature]):Boolean =
     cas.forall(ca=> fca(ca).enabledOut(gs.states(s.indexOf(ca)),p).isEmpty)
   

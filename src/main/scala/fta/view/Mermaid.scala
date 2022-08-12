@@ -12,7 +12,7 @@ import fta.feta.FCA.FCTrans
 import fta.feta.FReq._
 import fta.feta.FETA.StFReq
 import fta.feta.FSystem.FSysTrans
-import fta.view.Show.showFExp
+import fta.view.Show.{showFExp,showLabel}
 
 
 /**
@@ -64,16 +64,18 @@ object Mermaid:
     s"""
        |stateDiagram-v2
        | ${f.initial.map(i=> s"""[*] --> $i""").mkString("\n")}
-       | ${f.trans.map(t=>mkFCATrans(t)).mkString("\n")}
+       | ${f.trans.map(t=>mkFCATrans(t,f)).mkString("\n")}
        |""".stripMargin
   
-  def mkFCATrans(t:FCTrans)(implicit showVariability:Boolean):String =
-    s"""${t.from} --> ${t.to}: ${t.by}""" ++ (if showVariability then s"""<br>${mkFExp(t.fe)}""" else "")
+  def mkFCATrans(t:FCTrans,f:FCA)(implicit showVariability:Boolean):String =
+    s"""${t.from} --> ${t.to}: ${t.by}${if f.inputs(t.by) then "?" else if f.outputs(t.by) then "!" else ""}""" ++
+      (if showVariability then s"""<br>${mkFExp(t.fe)}""" else "")
 
   def mkLabel(l:SysLabel/*,names:Map[Int,String]*/):String =
-    val senders   = l.senders//.map(s=>names(s))
-    val receivers = l.receivers//.map(s=>names(s))
-    s"{${senders.mkString(",")}}, ${l.action}, {${receivers.mkString(",")}}"
+    l.show
+//    val senders   = l.senders//.map(s=>names(s))
+//    val receivers = l.receivers//.map(s=>names(s))
+//    s"{${senders.mkString(",")}}, ${l.action}, {${receivers.mkString(",")}}"
   
   def mkState(st:SysSt,sid:Map[SysSt,Int],reqs:Map[SysSt,StReq]): String =
   //s""" ${sid(st)}: (${st.states.mkString(",")})
@@ -115,10 +117,9 @@ object Mermaid:
     //    | ${freqMermaid(reqs(st).rcp)(using names)}<br/>
     //    | ${freqMermaid(reqs(st).rsp)(using names)}
     //    |""".stripMargin.replace("\n","")
-    s""" ${sid(st)}: 
-       | (${st.states.mkString(",")})<br>
-       | ${freqMermaid(reqs(st).rcp)/*(using names)*/}
-       |""".stripMargin.replace("\n","")
+    s""" ${sid(st)}: (${st.states.mkString(",")})
+       | ${sid(st)}: ${freqMermaid(reqs(st).rcp)/*(using names)*/}"""
+      .stripMargin //.replace("\n","")
 
   def mkFTrans(t:FSysTrans, sid:Map[SysSt,Int]/*,names:Map[Int,String]*/)(implicit showVariability:Boolean):String =
     s"""${sid(t.from)} --> ${sid(t.to)}: ${mkLabel(t.by/*,names*/)}""" ++ (if showVariability then "<br>"++mkFExp(t.fe) else "")

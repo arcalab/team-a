@@ -1,6 +1,7 @@
 package fta.feta
 
 import fta.eta.CA.CAction
+import fta.eta.System.{SysLabelComm, SysLabelTau}
 import fta.eta.{ST, STs}
 import fta.feta.FReq
 import fta.feta.FReq._
@@ -64,9 +65,12 @@ object FSTs:
     def satisfies(t:FSysTrans):Boolean =
       products.exists(p=>satisfies(p,t))
         
-    def satisfies(p:Product,t:FSysTrans):Boolean =
-      t.fe.satisfiedBy(p) &&
-        st(p).snd.satisfies(t.by.senders.size) && st(p).rcv.satisfies(t.by.receivers.size)
+    def satisfies(p:Product,t:FSysTrans):Boolean = t.by match
+      case by:SysLabelComm =>
+        t.fe.satisfiedBy(p) &&
+          st(p).snd.satisfies(by.senders.size) && st(p).rcv.satisfies(by.receivers.size)
+      case by:SysLabelTau =>
+        true // TODO: check if it is ok to always satisfy a Tau action.
         
     def satisfiedBy(t:FSysTrans):Set[Product] =
       products.collect({case p if satisfies(p,t) => p})

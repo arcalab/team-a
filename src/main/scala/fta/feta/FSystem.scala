@@ -1,11 +1,12 @@
 package fta.feta
 
-import fta.eta.System.{CName, SysLabel, SysSt, crossProduct}
+import fta.eta.System.{CName, SysLabel, SysLabelComm, SysLabelTau, SysSt, crossProduct}
 import fta.eta.CA.{CAction, CState}
 import fta.eta.System
 import fta.feta.FCA
 import fta.feta.FCA._
 import fta.features.FExp
+//import FExp.{FTrue,Product,Feature,land,lor}
 import fta.features.FExp._
 import fta.feta.FSystem.FSysTrans
 
@@ -98,9 +99,13 @@ object FSystem:
 
   protected def compFSysFCa(strans:Set[FSysTrans], c:FCA, cn:CName):Set[FSysTrans] =
     var ts:Set[FSysTrans]= Set()
-    // joined
-    for st<-strans;t<-c.trans; if (st.by.action == t.by) do
-      ts+=FSysTrans(mkSt(st.from,t.from),mkJoinLbl(st.by,c,cn),st.fe&&t.fe,mkSt(st.to,t.to))
+    // joined (if both are communicating actions)
+    for FSysTrans(from,by@SysLabelComm(_,a,_),fe,to)<-strans
+        t <- c.trans
+        if (a == t.by) && (c.inputs.contains(a) || c.outputs.contains(a)) do
+      ts += FSysTrans(mkSt(from,t.from), mkJoinLbl(by,c,cn), fe&&t.fe, mkSt(to,t.to))
+//    for st<-strans;t<-c.trans; if (st.by.action == t.by) do
+//      ts+=FSysTrans(mkSt(st.from,t.from),mkJoinLbl(st.by,c,cn),st.fe&&t.fe,mkSt(st.to,t.to))
     // only left
     for loc<-strans.flatMap(t=>Set(t.from,t.to)); t<-c.trans do
       ts+=FSysTrans(mkSt(loc,t.from),mkLbl(t.by,c,cn),t.fe,mkSt(loc,t.to))
@@ -110,15 +115,15 @@ object FSystem:
     ts
 
   // todo: fix cname to be directly c.name
-  protected def mkJoinLbl(slbl:SysLabel, c:FCA, cn:CName):SysLabel =
+  protected def mkJoinLbl(slbl:SysLabelComm, c:FCA, cn:CName):SysLabelComm =
     if c.inputs.contains(slbl.action)
-    then SysLabel(slbl.senders,slbl.action,slbl.receivers+cn)
-    else SysLabel(slbl.senders+cn,slbl.action,slbl.receivers)
+    then SysLabelComm(slbl.senders,slbl.action,slbl.receivers+cn)
+    else SysLabelComm(slbl.senders+cn,slbl.action,slbl.receivers)
 
   protected def mkLbl(a:CAction, c:FCA, cn:CName):SysLabel =
-    if c.inputs.contains(a)
-    then SysLabel(Set(),a,Set(cn))
-    else SysLabel(Set(cn),a,Set())
+    if c.inputs.contains(a)  then SysLabelComm(Set(),a,Set(cn)) else
+    if c.outputs contains(a) then SysLabelComm(Set(cn),a,Set()) else
+      SysLabelTau(cn,a)
 
   protected def mkSt(st:SysSt, s:CState):SysSt = SysSt(st.states.appended(s))
 

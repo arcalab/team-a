@@ -89,7 +89,8 @@ object Parser extends RegexParsers:
 //    "one" ^^ {_ => one} | "many" ^^ {_ => many} | "any" ^^ {_ => any}
 
   def singlerange:Parser[SRange] =
-    num~".."~maxrange ^^ {case f~_~m => range2SRange(f to m) } |
+    num~opt(".."~>maxrange) ^^ {case f~m => range2SRange(f to m.getOrElse(f)) } |
+    "*" ^^^ { range2SRange(0 to -1) } |
     "one" ^^ {_ => one} | "many" ^^ {_ => many} | "any" ^^ {_ => any}
 
   def maxrange:Parser[Int] =
