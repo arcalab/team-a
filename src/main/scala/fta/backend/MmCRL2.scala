@@ -93,7 +93,7 @@ object MmCRL2:
 
 
   /** Produces a mCRL2 specification, similar to `toProcess`, but using parameterised processes. */
-  def toParamProcess(fca: FCA, prod: Option[FExp.Product] = None): MmCRL2Spec =
+  def toParamProcess(fca: FCA, prod: Option[FExp.Product]): MmCRL2Spec =
     if fca.initial.isEmpty then MmCRL2Spec(Map(), Proc("0", Nil)) else
       val inits = fca.initial.map(n => Proc(fca.name,List(n.toString))) // processes
       val init = inits.tail.fold[Process](inits.head)((st1,st2) => st1 + st2) // process
@@ -126,9 +126,9 @@ object MmCRL2:
           comb.map(mkGAct(_,a))
     MmCRL2Spec(m.procs, Allow( allowed1++allowed2, m.init))
 
-  // wrap a mCRL2 spec with an Allow clause for ONLY the FETA actions (that obey sync types)
-  def wrapAllowFETA(feta: FETA, m: MmCRL2Spec): MmCRL2Spec =
-    val validLabels = TeamLogic.getAllowedLabels(feta.s,feta.fst)
+  // wrap a mCRL2 spec with an Allow clause for ONLY the FETA actions (that obey sync types and product)
+  def wrapAllowFETA(feta: FETA, prod:FExp.Product, m: MmCRL2Spec): MmCRL2Spec =
+    val validLabels = TeamLogic.getAllowedLabels(feta.s,feta.fst,prod)
     val actions: Set[Set[String]] = validLabels.map(_.match{
       case SysLabelComm(senders, action, receivers) =>
         (for s<-senders yield mkGAct(s,action)) ++
@@ -138,9 +138,9 @@ object MmCRL2:
     })
     MmCRL2Spec(m.procs, Allow(actions, m.init))
 
-  def wrapAllowFETAExtended(feta: FETA, m: MmCRL2Spec): MmCRL2Spec = wrapAllowFETA(feta,m) match
+  def wrapAllowFETAExtended(feta: FETA, prod:FExp.Product, m: MmCRL2Spec): MmCRL2Spec = wrapAllowFETA(feta,prod,m) match
     case MmCRL2Spec(ps, Allow(as,init)) =>
-      val comms = TeamLogic.getSystemCommLabels(feta.s,feta.fst)
+      val comms = TeamLogic.getSystemCommLabels(feta.s,feta.fst,prod)
       val emptySnds = for SysLabelComm(senders,a,_) <- comms; s<-senders yield Set(mkGAct(s,a))
       val emptyRcvs = for SysLabelComm(_,a,recvs)   <- comms; r<-recvs   yield Set(mkGAct(r,a))
       MmCRL2Spec(ps,Allow(as++emptySnds++emptyRcvs,init))
@@ -164,10 +164,15 @@ object MmCRL2:
   def toMuFormula(ac: ActionCharacterisation): String = 
     s"(<${toMAction(ac.label)}> true)  =>  (<${ac.disjunction.map(toMAction).mkString(" + ")}> true)"
   
-  private def toMAction(s:SysLabel): String = s match
+  private def toMAction(s: SysLabel): String = s match
     case SysLabelComm(senders, action, receivers) => (senders++receivers).map(mkGAct(_,action)).mkString("|")
     case SysLabelTau(comp, action) => mkGAct(comp,action)
 
+  private def toMAction(ss: (Set[SysLabel], SysLabelComm)): String =
+    if ss._1.isEmpty then toMAction(ss._2) else
+      val acts = ss._1.map(toMAction)
+      val sacts = acts.tail.fold(acts.head)(_ + "+" + _)
+      s"($sacts)* . ${toMAction(ss._2)}"
 
 
 

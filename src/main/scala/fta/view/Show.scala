@@ -39,20 +39,20 @@ object Show:
   given showFExp as Show[FExp]:
     extension (fe:FExp) def show:String = showFE(fe)
 
-    def showFE(fe: FExp): String = fe.simplify match
-      case FTrue => "⊤"
-      case FNot(FTrue) => "⊥"
-      case Feat(name) => name
-      case FAnd(FAnd(e1,e2), e3) => parShow(e1)+" ∧ "+showFE(FAnd(e2,e3))
-      case FAnd(e1, e2) => parShow(e1)+" ∧ "+parShow(e2)
-      case FOr(FOr(e1,e2), e3) => parShow(e1)+"|"+showFE(FOr(e2,e3))
-      case FOr(e1, e2) => parShow(e1)+"|"+parShow(e2)
-      case FNot(e) => "!"+parShow(e)
-      case FImp(e1, e2) => parShow(e1)+"-->"+parShow(e2)
-      case FEq(e1, e2) => parShow(e1)+"<->"+parShow(e2)
-      case FXor(e1, e2) => parShow(e1)+" ⊕ "+parShow(e2)
+  def showFE(fe: FExp): String = fe.simplify match
+    case FTrue => "⊤"
+    case FNot(FTrue) => "⊥"
+    case Feat(name) => name
+    case FAnd(FAnd(e1,e2), e3) => parShow(e1)+" ∧ "+showFE(FAnd(e2,e3))
+    case FAnd(e1, e2) => parShow(e1)+" ∧ "+parShow(e2)
+    case FOr(FOr(e1,e2), e3) => parShow(e1)+"|"+showFE(FOr(e2,e3))
+    case FOr(e1, e2) => parShow(e1)+"|"+parShow(e2)
+    case FNot(e) => "!"+parShow(e)
+    case FImp(e1, e2) => parShow(e1)+"-->"+parShow(e2)
+    case FEq(e1, e2) => parShow(e1)+"<->"+parShow(e2)
+    case FXor(e1, e2) => parShow(e1)+" ⊕ "+parShow(e2)
 
 
-    private def parShow(fExp: FExp): String = fExp match
-      case FTrue | Feat(_) | FNot(_) => showFE(fExp)
-      case _ => "("+showFE(fExp)+")"
+  private def parShow(fExp: FExp): String = fExp match
+    case FTrue | Feat(_) | FNot(_) => showFE(fExp)
+    case _ => "("+showFE(fExp)+")"

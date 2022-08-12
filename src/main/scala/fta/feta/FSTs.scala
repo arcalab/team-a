@@ -49,8 +49,16 @@ object FSTs:
   def apply(apst:(CAction,PST)*):FSTs = FSTs(apst.toMap)
 
   def complete(fst:FSTs,acts:Set[CAction],prods:Set[Product]):Boolean =
-    println(s"fst: ${fst}")
-    (fst.st.keySet == acts) && fst.st.values.forall(pst=> pst.products == prods)
+    //println(s"fst: ${fst}")
+    (fst.st.keySet == acts) && fst.st.values.forall(pst=> prods.subsetOf(pst.products))
+//    val res = (fst.st.keySet == acts) && fst.st.values.forall(pst=> prods.subsetOf(pst.products))
+//    if (!res) {
+//      println(s"${fst.st.keySet} == $acts")
+//      println(s"products:")
+//      fst.st.values.foreach(pst=> println(s"${pst.products} == $prods"))
+//    }
+//    println(if (res) "complete" else "INcomplete")
+//    res
   
   /**
    * Product Synchronization type 
