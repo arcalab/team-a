@@ -128,7 +128,8 @@ object MmCRL2:
 
   // wrap a mCRL2 spec with an Allow clause for ONLY the FETA actions (that obey sync types and product)
   def wrapAllowFETA(feta: FETA, prod:FExp.Product, m: MmCRL2Spec): MmCRL2Spec =
-    val validLabels = TeamLogic.getAllowedLabels(feta.s,feta.fst,prod)
+    val (comm,intern) = TeamLogic.getAllowedLabels(feta.s,feta.fst,prod)
+    val validLabels = comm++intern
     val actions: Set[Set[String]] = validLabels.map(_.match{
       case SysLabelComm(senders, action, receivers) =>
         (for s<-senders yield mkGAct(s,action)) ++
@@ -158,10 +159,11 @@ object MmCRL2:
 
   def toMuFormula(sr:SafetyRequirement): String =
     // SafetyRequirement(validLabels:Set[SysLabel], conjunction:Set[ActionCharacterisation]):
-    s"""[ (${sr.validLabels.map(toMAction).mkString(" + ")})* ](\n${
-             sr.conjunction.map(x=>"\n  ("+toMuFormula(x)+")").mkString(" &&")}\n)"""
+    val andOr = if (sr.asDisjunction) " ||" else " &&"
+    s"""[ (${sr.validLabels.map(toMAction).mkString(" + ")})* ](${
+             sr.conjunction.map(x=>"\n  ("+toMuFormula(x)+")").mkString(andOr)}\n)"""
 
-  def toMuFormula(ac: ActionCharacterisation): String = 
+  def toMuFormula(ac: ActionCharacterisation): String =
     s"(<${toMAction(ac.label)}> true)  =>  (<${ac.disjunction.map(toMAction).mkString(" + ")}> true)"
   
   private def toMAction(s: SysLabel): String = s match
