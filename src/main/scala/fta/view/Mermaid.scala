@@ -117,8 +117,9 @@ object Mermaid:
     //    | ${freqMermaid(reqs(st).rcp)(using names)}<br/>
     //    | ${freqMermaid(reqs(st).rsp)(using names)}
     //    |""".stripMargin.replace("\n","")
+    val rcp = freqMermaid(reqs(st).rcp)/*(using names)*/
     s""" ${sid(st)}: (${st.states.mkString(",")})
-       | ${sid(st)}: ${freqMermaid(reqs(st).rcp)/*(using names)*/}"""
+       | ${sid(st)}: ${if (rcp!="") "–– Rcp ––<br>" else ""}$rcp"""
       .stripMargin //.replace("\n","")
 
   def mkFTrans(t:FSysTrans, sid:Map[SysSt,Int]/*,names:Map[Int,String]*/)(implicit showVariability:Boolean):String =

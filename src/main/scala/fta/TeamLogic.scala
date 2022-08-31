@@ -59,8 +59,8 @@ object TeamLogic:
     val (commLabels, internalLabels) = getAllowedLabels(s, fsts, prod)
     val zeroSenders = commLabels
       .map(l => l.copy(senders = Set())) // get (0,a,in) from commLabels (st(Lambda))
-      .filter(s.labels) // (0,a,in) is in the system (Lambda)
-      .filter(l => !commLabels(l)) // (0,a,in) is NOT in commLabels (st(Lambda))
+      .filter(s.labels)                  // filter (0,a,in) that are in the system (Lambda)
+      .filter(l => !commLabels(l))       // filter (0,a,in) that are NOT in commLabels (st(Lambda))
     val actionsCharacterisation =
       for label <- zeroSenders yield
         val okLabels: Set[(Set[SysLabel], SysLabelComm)] = commLabels

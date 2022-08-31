@@ -156,15 +156,29 @@ object MmCRL2:
         rec ++ (for x <-pwSet(set-v1) yield (x+v1)) + Set(v1)
 
 
-
   def toMuFormula(sr:SafetyRequirement): String =
-    // SafetyRequirement(validLabels:Set[SysLabel], conjunction:Set[ActionCharacterisation]):
-    val andOr = if (sr.asDisjunction) " ||" else " &&"
     s"""[ (${sr.validLabels.map(toMAction).mkString(" + ")})* ](${
-             sr.conjunction.map(x=>"\n  ("+toMuFormula(x)+")").mkString(andOr)}\n)"""
+      if (sr.asDisjunction) {
+        "\n   "+
+        toMuFormula(sr.conjunction.map(x=> toMAction(x.label)),
+                    sr.conjunction.flatMap(x=>x.disjunction.map(toMAction)))
+      } else {
+        sr.conjunction.map(x=>"\n  ("+toMuFormula(x)+")").mkString("&&")}
+      }
+      |)""".stripMargin
+
+  def toMuFormula(guard:Iterable[String], acts:Iterable[String]): String =
+    s"(<${guard.mkString(" + ")}> true)  =>  (<${acts.mkString(" + ")}> true)"
+
+//  def toMuFormulaOld(sr:SafetyRequirement): String =
+//    // SafetyRequirement(validLabels:Set[SysLabel], conjunction:Set[ActionCharacterisation]):
+//    val andOr = if (sr.asDisjunction) " ||" else " &&"
+//    s"""[ (${sr.validLabels.map(toMAction).mkString(" + ")})* ](${
+//             sr.conjunction.map(x=>"\n  ("+toMuFormula(x)+")").mkString(andOr)}\n)"""
 
   def toMuFormula(ac: ActionCharacterisation): String =
-    s"(<${toMAction(ac.label)}> true)  =>  (<${ac.disjunction.map(toMAction).mkString(" + ")}> true)"
+    toMuFormula(List(toMAction(ac.label)), ac.disjunction.map(toMAction))
+//    s"(<${toMAction(ac.label)}> true)  =>  (<${ac.disjunction.map(toMAction).mkString(" + ")}> true)"
   
   private def toMAction(s: SysLabel): String = s match
     case SysLabelComm(senders, action, receivers) => (senders++receivers).map(mkGAct(_,action)).mkString("|")
