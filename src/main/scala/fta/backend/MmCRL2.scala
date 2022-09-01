@@ -159,19 +159,22 @@ object MmCRL2:
   def toMuFormula(sr:SafetyRequirement): String =
     s"""[ (${sr.validLabels.map(toMAction).mkString(" + ")})* ](${
       if (sr.asDisjunction) {
-        "\n   "+
-        toMuFormulaXL(sr.conjunction.map(x=> toMAction(x.label)),
-                    sr.conjunction.flatMap(x=>x.disjunction.map(toMAction)))
-      } else {
-        sr.conjunction.map(x=>"\n  ("+toMuFormula(x)+")").mkString(" &&")}
-      }
-      |)""".stripMargin
+        "\n   " +
+          toMuFormulaXL(sr.conjunction.map(x => toMAction(x.label)),
+            sr.conjunction.flatMap(x => x.disjunction.map(toMAction)))
+      } else
+        myMkString(sr.conjunction.map(x => "\n  (" + toMuFormula(x) + ")"), " &&", "true")
+    }
+    |)""".stripMargin
+
+  private def myMkString(els: Iterable[String], op: String, zero: String) =
+    if (els.isEmpty) zero else els.mkString(op)
 
   private def toMuFormula(guard:Iterable[String], acts:Iterable[String]): String =
-    s"(<${guard.mkString(" + ")}> true)  =>  (<${acts.mkString(" + ")}> true)"
+    s"(<${myMkString(guard," + ","false")}> true)  =>  (<${myMkString(acts," + ","false")}> true)"
 
   private def toMuFormulaXL(guard: Iterable[String], acts: Iterable[String]): String =
-    s"(<${guard.mkString(" +\n     ")}> true)\n   =>\n   (<${acts.mkString(" +\n     ")}> true)"
+    s"(<${myMkString(guard," +\n     ","false")}> true)\n   =>\n   (<${myMkString(acts," +\n     ","false")}> true)"
 
   //  def toMuFormulaOld(sr:SafetyRequirement): String =
 //    // SafetyRequirement(validLabels:Set[SysLabel], conjunction:Set[ActionCharacterisation]):
