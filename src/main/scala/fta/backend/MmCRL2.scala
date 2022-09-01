@@ -160,17 +160,20 @@ object MmCRL2:
     s"""[ (${sr.validLabels.map(toMAction).mkString(" + ")})* ](${
       if (sr.asDisjunction) {
         "\n   "+
-        toMuFormula(sr.conjunction.map(x=> toMAction(x.label)),
+        toMuFormulaXL(sr.conjunction.map(x=> toMAction(x.label)),
                     sr.conjunction.flatMap(x=>x.disjunction.map(toMAction)))
       } else {
-        sr.conjunction.map(x=>"\n  ("+toMuFormula(x)+")").mkString("&&")}
+        sr.conjunction.map(x=>"\n  ("+toMuFormula(x)+")").mkString(" &&")}
       }
       |)""".stripMargin
 
-  def toMuFormula(guard:Iterable[String], acts:Iterable[String]): String =
+  private def toMuFormula(guard:Iterable[String], acts:Iterable[String]): String =
     s"(<${guard.mkString(" + ")}> true)  =>  (<${acts.mkString(" + ")}> true)"
 
-//  def toMuFormulaOld(sr:SafetyRequirement): String =
+  private def toMuFormulaXL(guard: Iterable[String], acts: Iterable[String]): String =
+    s"(<${guard.mkString(" +\n     ")}> true)\n   =>\n   (<${acts.mkString(" +\n     ")}> true)"
+
+  //  def toMuFormulaOld(sr:SafetyRequirement): String =
 //    // SafetyRequirement(validLabels:Set[SysLabel], conjunction:Set[ActionCharacterisation]):
 //    val andOr = if (sr.asDisjunction) " ||" else " &&"
 //    s"""[ (${sr.validLabels.map(toMAction).mkString(" + ")})* ](${
