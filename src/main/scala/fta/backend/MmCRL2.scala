@@ -142,8 +142,8 @@ object MmCRL2:
   def wrapAllowFETAExtended(feta: FETA, prod:FExp.Product, m: MmCRL2Spec): MmCRL2Spec = wrapAllowFETA(feta,prod,m) match
     case MmCRL2Spec(ps, Allow(as,init)) =>
       val comms = TeamLogic.getSystemCommLabels(feta.s,feta.fst,prod)
-      val emptySnds = for SysLabelComm(senders,a,_) <- comms; s<-senders yield Set(mkGAct(s,a))
-      val emptyRcvs = for SysLabelComm(_,a,recvs)   <- comms; r<-recvs   yield Set(mkGAct(r,a))
+      val emptySnds = for SysLabelComm(senders,a,_) <- comms; s<-senders yield Set(mkGAct("NSnd-"+s,a))
+      val emptyRcvs = for SysLabelComm(_,a,recvs)   <- comms; r<-recvs   yield Set(mkGAct("NRcv-"+r,a))
       MmCRL2Spec(ps,Allow(as++emptySnds++emptyRcvs,init))
     case _ => sys.error("After `wrapAllowFETA` an `Allow` init was expected.)")
 
