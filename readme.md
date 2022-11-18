@@ -9,7 +9,7 @@ Currently, it is possible to try the tool online at
 
  - [http://arcatools.org/feta](http://arcatools.org/feta).
 
-To compile with the web frontend you need to compile and run [ReoLive](https://github.com/ReoLanguage/ReoLive) -- this repository is one of its dependencies. 
+To compile and run locally these analysis using a web frontend you need to compile and run the code from a specific branch of the ReoLive repository, available at https://github.com/ReoLanguage/ReoLive/tree/feta-only.
 
 When running the tool you will be able to:
  
@@ -23,6 +23,8 @@ When running the tool you will be able to:
 
 ## Publications
 - (2021) [Featured Team Automata](https://jose.proenca.org/publication/terbeek-featured-2021/). _Maurice H. ter Beek, Guillermina Cledou, Rolf Hennicker, José Proença_.  Formal Methods - 24th international symposium, FM 2019, Beijing, China, November 20-26, 2021, Proceedings.
+
+- (2023) __Can we Communicate? Using Dynamic Logic to Verify Team Automata.__ _Maurice H. ter Beek, Guillermina Cledou, Rolf Hennicker, José Proença_.  Formal Methods - 26th international symposium, FM 2023, Lübeck, Germany, March 6-10, 2023, Proceedings - to appear.
 
 
 ## Developers
