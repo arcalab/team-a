@@ -22,9 +22,9 @@ When running the tool you will be able to:
 
 
 ## Publications
-- (2021) [Featured Team Automata](https://jose.proenca.org/publication/terbeek-featured-2021/). _Maurice H. ter Beek, Guillermina Cledou, Rolf Hennicker, José Proença_.  Formal Methods - 24th international symposium, FM 2019, Beijing, China, November 20-26, 2021, Proceedings.
+- (2021) [Featured Team Automata](https://jose.proenca.org/publication/terbeek-featured-2021/). _Maurice H. ter Beek, Guillermina Cledou, Rolf Hennicker, José Proença_.  Formal Methods - 24th international symposium, FM 2019, Beijing, China, November 20-26, 2021, LNCS 13047.
 
-- (2023) __Can we Communicate? Using Dynamic Logic to Verify Team Automata.__ _Maurice H. ter Beek, Guillermina Cledou, Rolf Hennicker, José Proença_.  Formal Methods - 26th international symposium, FM 2023, Lübeck, Germany, March 6-10, 2023, Proceedings - to appear.
+- (2023) [Can we Communicate? Using Dynamic Logic to Verify Team Automata](https://jose.proenca.org/publication/terbeek-dlogic-2023/). _Maurice H. ter Beek, Guillermina Cledou, Rolf Hennicker, José Proença_.  Formal Methods - 26th international symposium, FM 2023, Lübeck, Germany, March 6-10, 2023, LNCS 14000.
 
 
 ## Developers
